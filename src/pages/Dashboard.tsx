@@ -12,16 +12,29 @@ interface UserProfile {
   role: "student" | "teacher";
 }
 
+interface Stats {
+  classes: number;
+  students: number;
+  materials: number;
+  progress: number;
+}
+
 const Dashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    classes: 0,
+    students: 0,
+    materials: 0,
+    progress: 0,
+  });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
+    checkAuthAndLoadData();
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuthAndLoadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -43,13 +56,80 @@ const Dashboard = () => {
       .single();
 
     if (profileData && roleData) {
-      setProfile({
+      const userProfile = {
         full_name: profileData.full_name,
         role: roleData.role as "student" | "teacher",
-      });
+      };
+      setProfile(userProfile);
+      await loadStats(userProfile.role, session.user.id);
     }
 
     setLoading(false);
+  };
+
+  const loadStats = async (role: "student" | "teacher", userId: string) => {
+    if (role === "teacher") {
+      // Buscar estatísticas do professor
+      const { count: classCount } = await supabase
+        .from("classes")
+        .select("*", { count: "exact", head: true })
+        .eq("teacher_id", userId);
+
+      const { count: materialCount } = await supabase
+        .from("materials")
+        .select("*", { count: "exact", head: true })
+        .eq("teacher_id", userId);
+
+      const { data: classes } = await supabase
+        .from("classes")
+        .select("id")
+        .eq("teacher_id", userId);
+
+      let studentCount = 0;
+      if (classes && classes.length > 0) {
+        const classIds = classes.map(c => c.id);
+        const { count } = await supabase
+          .from("class_enrollments")
+          .select("*", { count: "exact", head: true })
+          .in("class_id", classIds);
+        studentCount = count || 0;
+      }
+
+      setStats({
+        classes: classCount || 0,
+        students: studentCount,
+        materials: materialCount || 0,
+        progress: 0,
+      });
+    } else {
+      // Buscar estatísticas do aluno
+      const { count: classCount } = await supabase
+        .from("class_enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("student_id", userId);
+
+      const { data: enrollments } = await supabase
+        .from("class_enrollments")
+        .select("class_id")
+        .eq("student_id", userId);
+
+      let materialCount = 0;
+      if (enrollments && enrollments.length > 0) {
+        const classIds = enrollments.map(e => e.class_id);
+        const { count } = await supabase
+          .from("materials")
+          .select("*", { count: "exact", head: true })
+          .in("class_id", classIds);
+        materialCount = count || 0;
+      }
+
+      setStats({
+        classes: classCount || 0,
+        students: 0,
+        materials: materialCount,
+        progress: 0,
+      });
+    }
   };
 
   if (loading) {
@@ -101,7 +181,7 @@ const Dashboard = () => {
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">{stats.classes}</div>
                     <p className="text-xs text-muted-foreground">
                       {profile.role === "student" ? "disponíveis" : "no momento"}
                     </p>
@@ -116,7 +196,7 @@ const Dashboard = () => {
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">{profile.role === "student" ? stats.classes : stats.students}</div>
                     <p className="text-xs text-muted-foreground">
                       {profile.role === "student" ? "matriculado" : "cadastrados"}
                     </p>
@@ -126,14 +206,14 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      {profile.role === "student" ? "Conquistas" : "Materiais"}
+                      {profile.role === "student" ? "Materiais" : "Materiais"}
                     </CardTitle>
                     <Trophy className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">{stats.materials}</div>
                     <p className="text-xs text-muted-foreground">
-                      {profile.role === "student" ? "desbloqueadas" : "publicados"}
+                      {profile.role === "student" ? "disponíveis" : "publicados"}
                     </p>
                   </CardContent>
                 </Card>
