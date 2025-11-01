@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PlotTwist from "@/components/PlotTwist";
 import Navbar from "@/components/Navbar";
 import Home from "./Home";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Componente Index - Página principal do LUMINA
@@ -12,6 +14,19 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const [showPlotTwist, setShowPlotTwist] = useState(false);
   const [showRealSite, setShowRealSite] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Verificar se o usuário está logado
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Redireciona para o dashboard se estiver logado
+        navigate("/dashboard");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   // Função chamada quando usuário clica em Login ou Cadastrar
   const handleButtonClick = () => {
