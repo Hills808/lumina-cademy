@@ -9,6 +9,8 @@ import Cadastro from "./pages/Cadastro";
 import Dashboard from "./pages/Dashboard";
 import Turmas from "./pages/Turmas";
 import Materiais from "./pages/Materiais";
+import Calendario from "./pages/Calendario";
+import Quizzes from "./pages/Quizzes";
 import Assistente from "./pages/Assistente";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/turmas" element={<Turmas />} />
           <Route path="/materiais" element={<Materiais />} />
+          <Route path="/calendario" element={<Calendario />} />
+          <Route path="/quizzes" element={<Quizzes />} />
           <Route path="/assistente" element={<Assistente />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -26,6 +26,8 @@ interface Material {
   content: string;
   class_id: string;
   created_at: string;
+  video_url: string | null;
+  video_type: string | null;
   classes?: {
     name: string;
   };
@@ -49,6 +51,8 @@ const Materiais = () => {
     description: "",
     content: "",
     class_id: "",
+    video_url: "",
+    video_type: "",
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -127,6 +131,8 @@ const Materiais = () => {
         content,
         class_id,
         created_at,
+        video_url,
+        video_type,
         classes:class_id (name)
       `)
       .order("created_at", { ascending: false });
@@ -168,6 +174,8 @@ const Materiais = () => {
       content: newMaterial.content,
       class_id: newMaterial.class_id,
       teacher_id: user.id,
+      video_url: newMaterial.video_url || null,
+      video_type: newMaterial.video_type || null,
     });
 
     if (error) {
@@ -185,7 +193,7 @@ const Materiais = () => {
     });
 
     setDialogOpen(false);
-    setNewMaterial({ title: "", description: "", content: "", class_id: "" });
+    setNewMaterial({ title: "", description: "", content: "", class_id: "", video_url: "", video_type: "" });
     if (profile) await loadMaterials(profile.role);
   };
 
@@ -311,6 +319,30 @@ const Materiais = () => {
                             rows={10}
                           />
                         </div>
+                        <div>
+                          <Label htmlFor="video_type">Tipo de Vídeo (opcional)</Label>
+                          <Select value={newMaterial.video_type} onValueChange={(value) => setNewMaterial({ ...newMaterial, video_type: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Nenhum</SelectItem>
+                              <SelectItem value="youtube">YouTube</SelectItem>
+                              <SelectItem value="vimeo">Vimeo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {newMaterial.video_type && (
+                          <div>
+                            <Label htmlFor="video_url">URL do Vídeo</Label>
+                            <Input
+                              id="video_url"
+                              value={newMaterial.video_url}
+                              onChange={(e) => setNewMaterial({ ...newMaterial, video_url: e.target.value })}
+                              placeholder={`Ex: https://${newMaterial.video_type === 'youtube' ? 'youtube.com/watch?v=...' : 'vimeo.com/...'}`}
+                            />
+                          </div>
+                        )}
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setDialogOpen(false)}>
@@ -385,8 +417,32 @@ const Materiais = () => {
                       {selectedMaterial?.description}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap">{selectedMaterial?.content}</div>
+                  <div className="space-y-4">
+                    {selectedMaterial?.video_url && selectedMaterial?.video_type && (
+                      <div className="aspect-video w-full">
+                        {selectedMaterial.video_type === "youtube" && (
+                          <iframe
+                            className="w-full h-full rounded-lg"
+                            src={`https://www.youtube.com/embed/${new URL(selectedMaterial.video_url).searchParams.get('v')}`}
+                            title="YouTube video"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        )}
+                        {selectedMaterial.video_type === "vimeo" && (
+                          <iframe
+                            className="w-full h-full rounded-lg"
+                            src={`https://player.vimeo.com/video/${selectedMaterial.video_url.split('/').pop()}`}
+                            title="Vimeo video"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowFullScreen
+                          />
+                        )}
+                      </div>
+                    )}
+                    <div className="prose dark:prose-invert max-w-none">
+                      <div className="whitespace-pre-wrap">{selectedMaterial?.content}</div>
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={() => setViewDialogOpen(false)}>Fechar</Button>

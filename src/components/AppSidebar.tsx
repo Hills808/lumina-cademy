@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, BookOpen, Users, Bot, LogOut, Settings } from "lucide-react";
+import { Home, BookOpen, Users, Bot, LogOut, Settings, Calendar, Brain } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -29,6 +29,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "Materiais", url: "/materiais", icon: BookOpen },
     { title: "Minhas Turmas", url: "/turmas", icon: Users },
+    { title: "Calendário", url: "/calendario", icon: Calendar },
+    { title: "Quizzes", url: "/quizzes", icon: Brain },
     { title: "Assistente IA", url: "/assistente", icon: Bot },
   ];
 
@@ -36,6 +38,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "Gerenciar Materiais", url: "/materiais", icon: BookOpen },
     { title: "Minhas Turmas", url: "/turmas", icon: Users },
+    { title: "Calendário", url: "/calendario", icon: Calendar },
+    { title: "Quizzes", url: "/quizzes", icon: Brain },
     { title: "IA para Professores", url: "/assistente", icon: Bot },
   ];
 

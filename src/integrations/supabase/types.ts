@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          description: string | null
+          end_date: string
+          event_type: string
+          id: string
+          start_date: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date: string
+          event_type: string
+          id?: string
+          start_date: string
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          event_type?: string
+          id?: string
+          start_date?: string
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_enrollments: {
         Row: {
           class_id: string
@@ -83,6 +130,8 @@ export type Database = {
           teacher_id: string
           title: string
           updated_at: string
+          video_type: string | null
+          video_url: string | null
         }
         Insert: {
           class_id: string
@@ -93,6 +142,8 @@ export type Database = {
           teacher_id: string
           title: string
           updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
         }
         Update: {
           class_id?: string
@@ -103,6 +154,8 @@ export type Database = {
           teacher_id?: string
           title?: string
           updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -140,6 +193,164 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          id: string
+          quiz_id: string
+          score: number | null
+          started_at: string
+          student_id: string
+          total_points: number | null
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          quiz_id: string
+          score?: number | null
+          started_at?: string
+          student_id: string
+          total_points?: number | null
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          quiz_id?: string
+          score?: number | null
+          started_at?: string
+          student_id?: string
+          total_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_options: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          option_order: number
+          option_text: string
+          question_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          option_order: number
+          option_text: string
+          question_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          option_order?: number
+          option_text?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          id: string
+          points: number | null
+          question: string
+          question_order: number
+          quiz_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points?: number | null
+          question: string
+          question_order: number
+          quiz_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points?: number | null
+          question?: string
+          question_order?: number
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          class_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean | null
+          passing_score: number | null
+          teacher_id: string
+          time_limit_minutes: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          passing_score?: number | null
+          teacher_id: string
+          time_limit_minutes?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          passing_score?: number | null
+          teacher_id?: string
+          time_limit_minutes?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
