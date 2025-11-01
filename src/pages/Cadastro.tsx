@@ -1,32 +1,91 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Página de Cadastro do LUMINA
- * Permite registro como aluno ou professor
+ * Interface para registro de novos usuários (Aluno ou Professor)
  */
 const Cadastro = () => {
-  const [userType, setUserType] = useState<"aluno" | "professor">("aluno");
+  const [userType, setUserType] = useState<"student" | "teacher">("student");
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Verificar se já está logado
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem!");
+      toast({
+        title: "Erro",
+        description: "As senhas não coincidem!",
+        variant: "destructive",
+      });
       return;
     }
 
-    // TODO: Conectar com backend (Lovable Cloud)
-    console.log("Cadastro attempt:", { userType, nome, email, password });
+    if (password.length < 6) {
+      toast({
+        title: "Erro",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: nome,
+            role: userType,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Cadastro realizado!",
+        description: "Bem-vindo ao LUMINA. Você já pode fazer login.",
+      });
+
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Erro no cadastro",
+        description: error.message || "Ocorreu um erro ao criar sua conta.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,14 +114,14 @@ const Cadastro = () => {
             {/* Tipo de Usuário */}
             <div className="space-y-3">
               <Label>Você é:</Label>
-              <RadioGroup value={userType} onValueChange={(value) => setUserType(value as "aluno" | "professor")}>
+              <RadioGroup value={userType} onValueChange={(value) => setUserType(value as "student" | "teacher")} disabled={loading}>
                 <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                  <RadioGroupItem value="aluno" id="aluno" />
-                  <Label htmlFor="aluno" className="flex-1 cursor-pointer">Aluno</Label>
+                  <RadioGroupItem value="student" id="student" />
+                  <Label htmlFor="student" className="flex-1 cursor-pointer">Aluno</Label>
                 </div>
                 <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                  <RadioGroupItem value="professor" id="professor" />
-                  <Label htmlFor="professor" className="flex-1 cursor-pointer">Professor</Label>
+                  <RadioGroupItem value="teacher" id="teacher" />
+                  <Label htmlFor="teacher" className="flex-1 cursor-pointer">Professor</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -76,6 +135,7 @@ const Cadastro = () => {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 required
+                disabled={loading}
                 className="bg-background"
               />
             </div>
@@ -89,6 +149,7 @@ const Cadastro = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
                 className="bg-background"
               />
             </div>
@@ -102,6 +163,7 @@ const Cadastro = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
                 minLength={6}
                 className="bg-background"
               />
@@ -116,6 +178,7 @@ const Cadastro = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={loading}
                 minLength={6}
                 className="bg-background"
               />
@@ -125,8 +188,9 @@ const Cadastro = () => {
               type="submit"
               className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
               size="lg"
+              disabled={loading}
             >
-              Criar Conta
+              {loading ? "Criando conta..." : "Criar Conta"}
             </Button>
           </form>
 
