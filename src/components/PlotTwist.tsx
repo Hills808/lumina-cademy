@@ -74,24 +74,6 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
-      {/* Layout simples inicial - parece "feito às pressas" */}
-      {!showMessage && !showCode && (
-        <div className="flex min-h-screen items-center justify-center animate-fade-in">
-          <div className="text-center space-y-6 p-8 border border-border rounded-lg bg-card">
-            <h1 className="text-4xl font-bold text-foreground">LUMINA</h1>
-            <p className="text-muted-foreground">Plataforma Acadêmica</p>
-            <div className="flex gap-4">
-              <Button variant="outline" className="min-w-[120px]">
-                Login
-              </Button>
-              <Button variant="outline" className="min-w-[120px]">
-                Cadastrar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Mensagem "Achou mesmo que seria isso?" */}
       {showMessage && !showCode && (
         <div className="flex min-h-screen items-center justify-center animate-fade-in">
