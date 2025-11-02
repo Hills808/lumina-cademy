@@ -109,7 +109,7 @@ const Assistente = () => {
         if (response.status === 402) {
           toast({
             title: "Créditos insuficientes",
-            description: "Adicione créditos ao Lovable AI para continuar.",
+            description: "Adicione créditos para continuar usando o assistente.",
             variant: "destructive",
           });
           setMessages((prev) => prev.slice(0, -1));

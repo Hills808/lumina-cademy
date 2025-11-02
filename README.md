@@ -1,13 +1,8 @@
-# Sistema Acadêmico Colaborativo com Apoio de IA
-
-## PIM II - Projeto Integrado Multidisciplinar
-**Curso:** CST em Análise e Desenvolvimento de Sistemas  
-**Instituição:** UNIP - Universidade Paulista  
-**Período:** 2025/2
+# LUMINA - Sistema Acadêmico Colaborativo com Apoio de IA
 
 ## 📋 Sobre o Projeto
 
-Este projeto é um Sistema Acadêmico Colaborativo que integra funcionalidades de gerenciamento educacional com recursos de Inteligência Artificial. O sistema foi desenvolvido como parte do Projeto Integrado Multidisciplinar (PIM), explorando práticas modernas de engenharia de software ágil.
+LUMINA é um Sistema Acadêmico Colaborativo que integra funcionalidades de gerenciamento educacional com recursos de Inteligência Artificial, explorando práticas modernas de engenharia de software ágil.
 
 ## 🎯 Objetivos
 
@@ -131,14 +126,6 @@ O sistema implementa:
 - Validação de dados no frontend e backend
 - Proteção contra SQL Injection
 
-## 👥 Equipe
-
-Projeto desenvolvido por alunos do curso de Análise e Desenvolvimento de Sistemas da UNIP.
-
 ## 📄 Licença
 
-Este projeto é parte do PIM II da UNIP e segue as diretrizes acadêmicas da instituição.
-
----
-
-**⚠️ Nota Importante:** Este trabalho segue rigorosamente as normas ABNT e é 100% original. Plágio será reprovado conforme diretrizes do PIM.
+Este projeto é de código aberto e está disponível para uso educacional.
