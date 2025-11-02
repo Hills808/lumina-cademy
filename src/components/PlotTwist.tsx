@@ -16,6 +16,7 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
   const [typingText, setTypingText] = useState("");
   const typingTimerRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
 
   // Função para criar som realista de teclado mecânico
   const playTypingSound = () => {
@@ -111,7 +112,10 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
     // Finaliza após digitar todas as linhas
     if (currentLine >= codeLines.length) {
       const completeTimer = window.setTimeout(() => {
-        onComplete();
+        setIsExiting(true); // Inicia animação de saída
+        setTimeout(() => {
+          onComplete(); // Chama onComplete após a animação
+        }, 600); // Duração da animação de fade-out
       }, 1200);
       return () => clearTimeout(completeTimer);
     }
@@ -147,8 +151,15 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
     };
   }, [showCode, currentLine]);
 
+  const handleSkip = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onComplete();
+    }, 600);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className={`fixed inset-0 z-50 bg-background transition-opacity duration-500 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
       {/* Mensagem "Achou mesmo que seria isso?" */}
       {showMessage && !showCode && (
         <div className="flex min-h-screen items-center justify-center animate-fade-in">
@@ -168,7 +179,7 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
         <div className="relative min-h-screen bg-[#1e1e1e] p-8 animate-fade-in">
           {/* Botão para pular a animação */}
           <Button
-            onClick={onComplete}
+            onClick={handleSkip}
             variant="outline"
             className="absolute top-4 right-4 z-10"
           >

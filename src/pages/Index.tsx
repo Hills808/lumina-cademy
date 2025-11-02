@@ -47,10 +47,10 @@ const Index = () => {
   // Mostra o site completo após a animação
   if (showRealSite) {
     return (
-      <>
+      <div className="animate-fade-in">
         <Navbar />
         <Home />
-      </>
+      </div>
     );
   }
 
