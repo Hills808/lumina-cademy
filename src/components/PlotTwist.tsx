@@ -31,34 +31,33 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
       const now = audioContext.currentTime;
       
-      // Cria 2 osciladores para simular o som de teclado mecânico (click + thud)
-      // Click (som agudo rápido)
+      // Click (som do mecanismo, mais suave)
       const clickOsc = audioContext.createOscillator();
       const clickGain = audioContext.createGain();
       clickOsc.connect(clickGain);
       clickGain.connect(audioContext.destination);
       
-      clickOsc.frequency.value = 2000 + Math.random() * 500; // Som agudo
-      clickOsc.type = 'square';
-      clickGain.gain.setValueAtTime(0.05, now);
-      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.01);
+      clickOsc.frequency.value = 400 + Math.random() * 200; // Frequência mais baixa
+      clickOsc.type = 'triangle'; // Onda triangular para som mais suave
+      clickGain.gain.setValueAtTime(0.03, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
       
       clickOsc.start(now);
-      clickOsc.stop(now + 0.01);
+      clickOsc.stop(now + 0.015);
       
-      // Thud (som grave do impacto)
+      // Thud (som do impacto da tecla)
       const thudOsc = audioContext.createOscillator();
       const thudGain = audioContext.createGain();
       thudOsc.connect(thudGain);
       thudGain.connect(audioContext.destination);
       
-      thudOsc.frequency.value = 80 + Math.random() * 40; // Som grave
+      thudOsc.frequency.value = 100 + Math.random() * 30; // Som grave do impacto
       thudOsc.type = 'sine';
-      thudGain.gain.setValueAtTime(0.08, now);
-      thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      thudGain.gain.setValueAtTime(0.06, now);
+      thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
       
       thudOsc.start(now);
-      thudOsc.stop(now + 0.03);
+      thudOsc.stop(now + 0.04);
       
     } catch (error) {
       console.debug('Audio error:', error);
