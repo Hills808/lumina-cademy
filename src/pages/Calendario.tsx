@@ -135,7 +135,7 @@ const Calendario = () => {
 
     const { error } = await supabase.from("calendar_events").insert({
       ...formData,
-      class_id: formData.class_id || null,
+      class_id: formData.class_id === "none" ? null : formData.class_id,
       teacher_id: session.user.id,
     });
 
@@ -264,7 +264,7 @@ const Calendario = () => {
                           <SelectValue placeholder="Selecione uma turma" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Nenhuma (geral)</SelectItem>
+                          <SelectItem value="none">Nenhuma (geral)</SelectItem>
                           {classes.map((cls) => (
                             <SelectItem key={cls.id} value={cls.id}>
                               {cls.name} ({cls.code})

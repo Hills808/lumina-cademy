@@ -175,7 +175,7 @@ const Materiais = () => {
       class_id: newMaterial.class_id,
       teacher_id: user.id,
       video_url: newMaterial.video_url || null,
-      video_type: newMaterial.video_type || null,
+      video_type: newMaterial.video_type === "none" ? null : newMaterial.video_type || null,
     });
 
     if (error) {
@@ -326,13 +326,13 @@ const Materiais = () => {
                               <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Nenhum</SelectItem>
+                              <SelectItem value="none">Nenhum</SelectItem>
                               <SelectItem value="youtube">YouTube</SelectItem>
                               <SelectItem value="vimeo">Vimeo</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                        {newMaterial.video_type && (
+                        {newMaterial.video_type && newMaterial.video_type !== "none" && (
                           <div>
                             <Label htmlFor="video_url">URL do Vídeo</Label>
                             <Input
@@ -418,7 +418,7 @@ const Materiais = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
-                    {selectedMaterial?.video_url && selectedMaterial?.video_type && (
+                    {selectedMaterial?.video_url && selectedMaterial?.video_type && selectedMaterial?.video_type !== "none" && (
                       <div className="aspect-video w-full">
                         {selectedMaterial.video_type === "youtube" && (
                           <iframe
