@@ -1,73 +1,166 @@
-# Welcome to your Lovable project
+# Sistema Acadêmico Colaborativo com Apoio de IA
 
-## Project info
+## PIM II - Projeto Integrado Multidisciplinar
+**Curso:** CST em Análise e Desenvolvimento de Sistemas  
+**Instituição:** UNIP - Universidade Paulista  
+**Período:** 2025/2
 
-**URL**: https://lovable.dev/projects/5d080d08-e951-477a-9927-cebdeb7539b0
+## 📋 Sobre o Projeto
 
-## How can I edit this code?
+Este projeto é um Sistema Acadêmico Colaborativo que integra funcionalidades de gerenciamento educacional com recursos de Inteligência Artificial. O sistema foi desenvolvido como parte do Projeto Integrado Multidisciplinar (PIM), explorando práticas modernas de engenharia de software ágil.
 
-There are several ways of editing your application.
+## 🎯 Objetivos
 
-**Use Lovable**
+### Objetivo Geral
+Projetar e implementar um sistema acadêmico integrado que permita gerenciar turmas, alunos, aulas e atividades, com funcionalidades de colaboração, explorando práticas de engenharia de software ágil e uso de recursos de Inteligência Artificial.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5d080d08-e951-477a-9927-cebdeb7539b0) and start prompting.
+### Objetivos Específicos
+- Gerenciamento completo de turmas e matrículas
+- Sistema de materiais didáticos com suporte a vídeos
+- Criação e aplicação de quizzes avaliativos
+- Calendário acadêmico integrado
+- Assistente virtual com IA para suporte aos usuários
+- Interface responsiva e intuitiva
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Funcionalidades
 
-**Use your preferred IDE**
+### Para Professores
+- ✅ Criação e gerenciamento de turmas
+- ✅ Upload e organização de materiais didáticos
+- ✅ Criação de quizzes e avaliações
+- ✅ Gestão de calendário acadêmico
+- ✅ Visualização de desempenho dos alunos
+- ✅ Assistente de IA para auxílio pedagógico
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Para Alunos
+- ✅ Matrícula em turmas via código
+- ✅ Acesso a materiais didáticos
+- ✅ Realização de quizzes
+- ✅ Visualização de calendário de eventos
+- ✅ Dashboard com estatísticas de desempenho
+- ✅ Assistente de IA para dúvidas e suporte
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 💻 Tecnologias Utilizadas
 
-Follow these steps:
+### Frontend
+- **React** - Biblioteca JavaScript para interfaces
+- **TypeScript** - Superset tipado do JavaScript
+- **Vite** - Build tool e dev server
+- **Tailwind CSS** - Framework CSS utilitário
+- **shadcn/ui** - Componentes UI acessíveis
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Backend (Lovable Cloud)
+- **Supabase** - Backend as a Service
+- **PostgreSQL** - Banco de dados relacional
+- **Edge Functions** - Serverless functions
+- **Row Level Security (RLS)** - Segurança de dados
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Inteligência Artificial
+- **Lovable AI** - Modelos de IA integrados
+- **Gemini 2.5** - Modelo para assistente virtual
+- **GPT-5** - Modelos OpenAI para funcionalidades avançadas
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🛠️ Como Executar o Projeto
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Pré-requisitos
+- Node.js (versão 18 ou superior)
+- npm ou bun
+
+### Instalação
+
+```bash
+# Clone o repositório
+git clone <URL_DO_REPOSITORIO>
+
+# Navegue até o diretório
+cd <NOME_DO_PROJETO>
+
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O projeto estará disponível em `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📦 Estrutura do Projeto
 
-**Use GitHub Codespaces**
+```
+├── src/
+│   ├── components/         # Componentes reutilizáveis
+│   │   ├── ui/            # Componentes UI do shadcn
+│   │   ├── AppSidebar.tsx # Barra lateral de navegação
+│   │   └── Navbar.tsx     # Barra de navegação
+│   ├── pages/             # Páginas da aplicação
+│   │   ├── Login.tsx      # Autenticação
+│   │   ├── Cadastro.tsx   # Registro de usuários
+│   │   ├── Dashboard.tsx  # Painel principal
+│   │   ├── Turmas.tsx     # Gerenciamento de turmas
+│   │   ├── Materiais.tsx  # Materiais didáticos
+│   │   ├── Quizzes.tsx    # Sistema de avaliações
+│   │   ├── Calendario.tsx # Calendário acadêmico
+│   │   └── Assistente.tsx # Assistente com IA
+│   ├── integrations/      # Integrações externas
+│   │   └── supabase/      # Cliente Supabase
+│   └── lib/               # Utilitários e helpers
+├── supabase/              # Configurações do backend
+│   └── functions/         # Edge Functions
+└── public/                # Arquivos estáticos
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🗃️ Banco de Dados
 
-## What technologies are used for this project?
+### Tabelas Principais
+- **profiles** - Perfis de usuários
+- **user_roles** - Papéis (aluno/professor)
+- **classes** - Turmas
+- **class_enrollments** - Matrículas
+- **materials** - Materiais didáticos
+- **quizzes** - Avaliações
+- **quiz_questions** - Questões dos quizzes
+- **quiz_options** - Opções de resposta
+- **quiz_attempts** - Tentativas de resolução
+- **calendar_events** - Eventos do calendário
 
-This project is built with:
+## 🔐 Segurança
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+O sistema implementa:
+- Autenticação via email/senha
+- Row Level Security (RLS) em todas as tabelas
+- Políticas de acesso baseadas em papéis
+- Validação de dados no frontend e backend
+- Proteção contra SQL Injection
 
-## How can I deploy this project?
+## 🚀 Deploy
 
-Simply open [Lovable](https://lovable.dev/projects/5d080d08-e951-477a-9927-cebdeb7539b0) and click on Share -> Publish.
+Para publicar o projeto:
 
-## Can I connect a custom domain to my Lovable project?
+1. Acesse [Lovable](https://lovable.dev/projects/5d080d08-e951-477a-9927-cebdeb7539b0)
+2. Clique em **Share → Publish**
+3. O projeto será publicado automaticamente
 
-Yes, you can!
+## 📱 Domínio Customizado
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+É possível conectar um domínio personalizado através de:
+- Project > Settings > Domains > Connect Domain
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Documentação: [Custom Domain Setup](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## 👥 Equipe
+
+Projeto desenvolvido por alunos do curso de Análise e Desenvolvimento de Sistemas da UNIP.
+
+## 📄 Licença
+
+Este projeto é parte do PIM II da UNIP e segue as diretrizes acadêmicas da instituição.
+
+## 📞 Suporte
+
+Para dúvidas ou suporte:
+- Documentação: [Lovable Docs](https://docs.lovable.dev)
+- Comunidade: [Discord da Lovable](https://discord.com/channels/1119885301872070706/1280461670979993613)
+
+---
+
+**⚠️ Nota Importante:** Este trabalho segue rigorosamente as normas ABNT e é 100% original. Plágio será reprovado conforme diretrizes do PIM.
