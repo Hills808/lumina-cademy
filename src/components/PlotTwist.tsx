@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 interface PlotTwistProps {
@@ -13,6 +13,34 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
   const [showMessage, setShowMessage] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [currentLine, setCurrentLine] = useState(0);
+  const [typingText, setTypingText] = useState("");
+  const [isTypingLine, setIsTypingLine] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Função para criar som de digitação usando Web Audio API
+  const playTypingSound = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    const audioContext = audioContextRef.current;
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Configuração do som (frequência varia para parecer mais natural)
+    oscillator.frequency.value = 800 + Math.random() * 200;
+    oscillator.type = 'sine';
+    
+    // Volume baixo e curto
+    gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.05);
+  };
 
   // Código que será "digitado" na animação
   const codeLines = [
@@ -54,14 +82,29 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
     };
   }, []);
 
+  // Efeito de digitação caractere por caractere
   useEffect(() => {
-    if (showCode && currentLine < codeLines.length) {
-      // Avança para a próxima linha de código a cada 200ms
-      const lineTimer = setTimeout(() => {
-        setCurrentLine((prev) => prev + 1);
-      }, 200);
+    if (showCode && currentLine < codeLines.length && !isTypingLine) {
+      const currentLineText = codeLines[currentLine];
+      setIsTypingLine(true);
+      setTypingText("");
+      
+      let charIndex = 0;
+      const typingInterval = setInterval(() => {
+        if (charIndex < currentLineText.length) {
+          setTypingText(currentLineText.substring(0, charIndex + 1));
+          playTypingSound();
+          charIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTypingLine(false);
+          setTimeout(() => {
+            setCurrentLine((prev) => prev + 1);
+          }, 100);
+        }
+      }, 50); // Velocidade de digitação
 
-      return () => clearTimeout(lineTimer);
+      return () => clearInterval(typingInterval);
     } else if (showCode && currentLine >= codeLines.length) {
       // Quando terminar de "digitar" todo o código, completa a animação
       const completeTimer = setTimeout(() => {
@@ -70,7 +113,7 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
       return () => clearTimeout(completeTimer);
     }
-  }, [showCode, currentLine, codeLines.length, onComplete]);
+  }, [showCode, currentLine, codeLines.length, onComplete, isTypingLine]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
@@ -116,10 +159,9 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
                 {codeLines.slice(0, currentLine).map((line, index) => (
                   <div
                     key={index}
-                    className="animate-slide-up"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className="leading-6"
                   >
-                    <span className="text-gray-500 mr-4">{index + 1}</span>
+                    <span className="text-gray-500 mr-4 select-none">{index + 1}</span>
                     <span
                       className={
                         line.startsWith("<!--") || line.startsWith("#")
@@ -133,11 +175,27 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
                     >
                       {line}
                     </span>
-                    {index === currentLine - 1 && (
-                      <span className="inline-block w-2 h-4 bg-primary ml-1 animate-blink"></span>
-                    )}
                   </div>
                 ))}
+                {isTypingLine && (
+                  <div className="leading-6">
+                    <span className="text-gray-500 mr-4 select-none">{currentLine + 1}</span>
+                    <span
+                      className={
+                        typingText.startsWith("<!--") || typingText.startsWith("#")
+                          ? "text-green-400"
+                          : typingText.includes("<") || typingText.includes(">")
+                          ? "text-blue-400"
+                          : typingText.includes("def") || typingText.includes("from")
+                          ? "text-purple-400"
+                          : "text-gray-300"
+                      }
+                    >
+                      {typingText}
+                    </span>
+                    <span className="inline-block w-2 h-5 bg-blue-400 ml-1 animate-pulse"></span>
+                  </div>
+                )}
               </div>
             </div>
 
