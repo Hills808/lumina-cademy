@@ -14,10 +14,10 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
   const [showCode, setShowCode] = useState(false);
   const [currentLine, setCurrentLine] = useState(0);
   const [typingText, setTypingText] = useState("");
-  const audioContextRef = useRef<AudioContext | null>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Função para criar som de digitação usando Web Audio API
+  // Função para criar som realista de teclado mecânico
   const playTypingSound = () => {
     try {
       if (!audioContextRef.current) {
@@ -25,25 +25,42 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
       }
       
       const audioContext = audioContextRef.current;
-      if (audioContext.state === 'suspended') { audioContext.resume().catch(() => {}); }
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      if (audioContext.state === 'suspended') { 
+        audioContext.resume().catch(() => {}); 
+      }
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      // Configuração do som (frequência varia para parecer mais natural)
-      oscillator.frequency.value = 200 + Math.random() * 150; // Som mais grave e agradável
-      oscillator.type = 'sine';
+      const now = audioContext.currentTime;
       
-      // Volume baixo e curto
-      gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.04);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.05);
+      // Cria 2 osciladores para simular o som de teclado mecânico (click + thud)
+      // Click (som agudo rápido)
+      const clickOsc = audioContext.createOscillator();
+      const clickGain = audioContext.createGain();
+      clickOsc.connect(clickGain);
+      clickGain.connect(audioContext.destination);
+      
+      clickOsc.frequency.value = 2000 + Math.random() * 500; // Som agudo
+      clickOsc.type = 'square';
+      clickGain.gain.setValueAtTime(0.05, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.01);
+      
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.01);
+      
+      // Thud (som grave do impacto)
+      const thudOsc = audioContext.createOscillator();
+      const thudGain = audioContext.createGain();
+      thudOsc.connect(thudGain);
+      thudGain.connect(audioContext.destination);
+      
+      thudOsc.frequency.value = 80 + Math.random() * 40; // Som grave
+      thudOsc.type = 'sine';
+      thudGain.gain.setValueAtTime(0.08, now);
+      thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      
+      thudOsc.start(now);
+      thudOsc.stop(now + 0.03);
+      
     } catch (error) {
-      // Ignora erros de áudio silenciosamente
       console.debug('Audio error:', error);
     }
   };
