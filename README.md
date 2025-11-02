@@ -49,16 +49,15 @@ Projetar e implementar um sistema acadêmico integrado que permita gerenciar tur
 - **Tailwind CSS** - Framework CSS utilitário
 - **shadcn/ui** - Componentes UI acessíveis
 
-### Backend (Lovable Cloud)
+### Backend
 - **Supabase** - Backend as a Service
 - **PostgreSQL** - Banco de dados relacional
-- **Edge Functions** - Serverless functions
+- **Edge Functions** - Funções serverless
 - **Row Level Security (RLS)** - Segurança de dados
 
 ### Inteligência Artificial
-- **Lovable AI** - Modelos de IA integrados
 - **Gemini 2.5** - Modelo para assistente virtual
-- **GPT-5** - Modelos OpenAI para funcionalidades avançadas
+- **GPT-5** - Modelos para funcionalidades avançadas de IA
 
 ## 🛠️ Como Executar o Projeto
 
@@ -132,21 +131,6 @@ O sistema implementa:
 - Validação de dados no frontend e backend
 - Proteção contra SQL Injection
 
-## 🚀 Deploy
-
-Para publicar o projeto:
-
-1. Acesse [Lovable](https://lovable.dev/projects/5d080d08-e951-477a-9927-cebdeb7539b0)
-2. Clique em **Share → Publish**
-3. O projeto será publicado automaticamente
-
-## 📱 Domínio Customizado
-
-É possível conectar um domínio personalizado através de:
-- Project > Settings > Domains > Connect Domain
-
-Documentação: [Custom Domain Setup](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
 ## 👥 Equipe
 
 Projeto desenvolvido por alunos do curso de Análise e Desenvolvimento de Sistemas da UNIP.
@@ -154,12 +138,6 @@ Projeto desenvolvido por alunos do curso de Análise e Desenvolvimento de Sistem
 ## 📄 Licença
 
 Este projeto é parte do PIM II da UNIP e segue as diretrizes acadêmicas da instituição.
-
-## 📞 Suporte
-
-Para dúvidas ou suporte:
-- Documentação: [Lovable Docs](https://docs.lovable.dev)
-- Comunidade: [Discord da Lovable](https://discord.com/channels/1119885301872070706/1280461670979993613)
 
 ---
 
