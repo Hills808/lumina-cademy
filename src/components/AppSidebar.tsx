@@ -55,7 +55,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
       });
     } else {
       toast({
-        title: "Logout realizado",
+        title: "Saída realizada",
         description: "Até logo!",
       });
       navigate("/");
