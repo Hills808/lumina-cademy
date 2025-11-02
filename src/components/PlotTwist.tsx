@@ -120,11 +120,13 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
       {/* Mensagem "Achou mesmo que seria isso?" */}
       {showMessage && !showCode && (
         <div className="flex min-h-screen items-center justify-center animate-fade-in">
-          <div className="text-center space-y-4">
-            <h2 className="text-5xl font-bold text-primary animate-glow-pulse">
-              Achou mesmo que seria isso?
+          <div className="text-center space-y-4 max-w-2xl px-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-primary animate-glow-pulse">
+              Ops! Esqueci de terminar essa parte... 😅
             </h2>
-            <p className="text-xl text-muted-foreground">Aguarde...</p>
+            <p className="text-xl text-muted-foreground animate-pulse">
+              Pera aí que eu faço rapidinho!
+            </p>
           </div>
         </div>
       )}
