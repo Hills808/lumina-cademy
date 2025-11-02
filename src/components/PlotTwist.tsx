@@ -19,27 +19,32 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
   // Função para criar som de digitação usando Web Audio API
   const playTypingSound = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const audioContext = audioContextRef.current;
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Configuração do som (frequência varia para parecer mais natural)
+      oscillator.frequency.value = 800 + Math.random() * 200;
+      oscillator.type = 'sine';
+      
+      // Volume baixo e curto
+      gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.05);
+    } catch (error) {
+      // Ignora erros de áudio silenciosamente
+      console.debug('Audio error:', error);
     }
-    
-    const audioContext = audioContextRef.current;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    // Configuração do som (frequência varia para parecer mais natural)
-    oscillator.frequency.value = 800 + Math.random() * 200;
-    oscillator.type = 'sine';
-    
-    // Volume baixo e curto
-    gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.05);
   };
 
   // Código que será "digitado" na animação
@@ -84,36 +89,50 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
   // Efeito de digitação caractere por caractere
   useEffect(() => {
-    if (showCode && currentLine < codeLines.length && !isTypingLine) {
-      const currentLineText = codeLines[currentLine];
-      setIsTypingLine(true);
-      setTypingText("");
-      
-      let charIndex = 0;
-      const typingInterval = setInterval(() => {
-        if (charIndex < currentLineText.length) {
-          setTypingText(currentLineText.substring(0, charIndex + 1));
-          playTypingSound();
-          charIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTypingLine(false);
-          setTimeout(() => {
-            setCurrentLine((prev) => prev + 1);
-          }, 100);
-        }
-      }, 50); // Velocidade de digitação
-
-      return () => clearInterval(typingInterval);
-    } else if (showCode && currentLine >= codeLines.length) {
-      // Quando terminar de "digitar" todo o código, completa a animação
-      const completeTimer = setTimeout(() => {
-        onComplete();
-      }, 1500);
-
-      return () => clearTimeout(completeTimer);
+    if (!showCode || currentLine >= codeLines.length) {
+      if (showCode && currentLine >= codeLines.length) {
+        // Quando terminar de "digitar" todo o código, completa a animação
+        const completeTimer = setTimeout(() => {
+          onComplete();
+        }, 1500);
+        return () => clearTimeout(completeTimer);
+      }
+      return;
     }
-  }, [showCode, currentLine, codeLines.length, onComplete, isTypingLine]);
+
+    if (isTypingLine) return; // Evita múltiplas execuções
+
+    const currentLineText = codeLines[currentLine];
+    setIsTypingLine(true);
+    setTypingText("");
+    
+    let charIndex = 0;
+    let isCancelled = false;
+    
+    const typingInterval = setInterval(() => {
+      if (isCancelled) {
+        clearInterval(typingInterval);
+        return;
+      }
+
+      if (charIndex < currentLineText.length) {
+        setTypingText(currentLineText.substring(0, charIndex + 1));
+        playTypingSound();
+        charIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTypingLine(false);
+        setTimeout(() => {
+          setCurrentLine((prev) => prev + 1);
+        }, 100);
+      }
+    }, 50); // Velocidade de digitação
+
+    return () => {
+      isCancelled = true;
+      clearInterval(typingInterval);
+    };
+  }, [showCode, currentLine, isTypingLine]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
