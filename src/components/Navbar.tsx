@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import luminaLogo from "@/assets/lumina-logo.png";
 
 /**
  * Navbar principal do site LUMINA
@@ -15,11 +16,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">L</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">LUMINA</span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src={luminaLogo} 
+              alt="LUMINA - Plataforma Acadêmica" 
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Links desktop */}
