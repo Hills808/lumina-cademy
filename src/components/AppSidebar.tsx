@@ -47,6 +47,17 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
+    
+    // Se a sessão já expirou, apenas redirecionar
+    if (error && error.message.includes("session")) {
+      toast({
+        title: "Saída realizada",
+        description: "Até logo!",
+      });
+      navigate("/");
+      return;
+    }
+    
     if (error) {
       toast({
         title: "Erro ao sair",
