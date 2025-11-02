@@ -69,7 +69,18 @@ const Cadastro = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Tratamento específico para usuário já cadastrado
+        if (error.message.includes("User already registered") || error.status === 422) {
+          toast({
+            title: "Email já cadastrado",
+            description: "Este email já possui uma conta. Por favor, faça login ou use outro email.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Cadastro realizado!",
