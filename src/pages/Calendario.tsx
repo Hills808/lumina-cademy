@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus, Clock, MapPin } from "lucide-react";
+import { Calendar, Plus, Clock, MapPin, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -158,6 +158,29 @@ const Calendario = () => {
         start_date: "",
         end_date: "",
         class_id: "",
+      });
+      if (profile?.role === "teacher") {
+        loadTeacherData(session.user.id);
+      }
+    }
+  };
+
+  const handleDelete = async (eventId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.from("calendar_events").delete().eq("id", eventId);
+
+    if (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o evento.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Sucesso",
+        description: "Evento excluído com sucesso!",
       });
       if (profile?.role === "teacher") {
         loadTeacherData(session.user.id);
@@ -329,6 +352,15 @@ const Calendario = () => {
                               </CardDescription>
                             )}
                           </div>
+                          {profile.role === "teacher" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(event.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
