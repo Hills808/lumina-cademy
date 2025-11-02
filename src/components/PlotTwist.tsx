@@ -33,12 +33,12 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
       gainNode.connect(audioContext.destination);
 
       // Configuração do som (frequência varia para parecer mais natural)
-      oscillator.frequency.value = 800 + Math.random() * 200;
+      oscillator.frequency.value = 200 + Math.random() * 150; // Som mais grave e agradável
       oscillator.type = 'sine';
       
       // Volume baixo e curto
-      gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+      gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.005, audioContext.currentTime + 0.04);
 
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.05);
