@@ -160,16 +160,29 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
   return (
     <div className={`fixed inset-0 z-50 bg-background transition-opacity duration-500 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
-      {/* Mensagem "Achou mesmo que seria isso?" */}
+      {/* Mensagem inicial profissional */}
       {showMessage && !showCode && (
-        <div className="flex min-h-screen items-center justify-center animate-fade-in">
-          <div className="text-center space-y-4 max-w-2xl px-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-primary animate-glow-pulse">
-              Ops! Esqueci de terminar essa parte... 😅
-            </h2>
-            <p className="text-xl text-muted-foreground animate-pulse">
-              Pera aí que eu faço rapidinho!
-            </p>
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+          <div className="text-center space-y-8 max-w-3xl px-6">
+            <div className="space-y-4 animate-fade-in">
+              <div className="inline-block">
+                <div className="h-1 w-24 bg-primary rounded-full mx-auto mb-6 animate-pulse"></div>
+              </div>
+              
+              <h2 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
+                Um momento...
+              </h2>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
+                Estamos preparando uma experiência única para você
+              </p>
+              
+              <div className="pt-8 flex items-center justify-center gap-2">
+                <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="h-2 w-2 bg-primary rounded-full animate-bounce"></div>
+              </div>
+            </div>
           </div>
         </div>
       )}
