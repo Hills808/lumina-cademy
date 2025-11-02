@@ -14,8 +14,8 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
   const [showCode, setShowCode] = useState(false);
   const [currentLine, setCurrentLine] = useState(0);
   const [typingText, setTypingText] = useState("");
-  const [isTypingLine, setIsTypingLine] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
 
   // Função para criar som de digitação usando Web Audio API
   const playTypingSound = () => {
@@ -25,6 +25,7 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
       }
       
       const audioContext = audioContextRef.current;
+      if (audioContext.state === 'suspended') { audioContext.resume().catch(() => {}); }
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -89,50 +90,46 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
 
   // Efeito de digitação caractere por caractere
   useEffect(() => {
-    if (!showCode || currentLine >= codeLines.length) {
-      if (showCode && currentLine >= codeLines.length) {
-        // Quando terminar de "digitar" todo o código, completa a animação
-        const completeTimer = setTimeout(() => {
-          onComplete();
-        }, 1500);
-        return () => clearTimeout(completeTimer);
-      }
-      return;
+    if (!showCode) return;
+
+    // Finaliza após digitar todas as linhas
+    if (currentLine >= codeLines.length) {
+      const completeTimer = window.setTimeout(() => {
+        onComplete();
+      }, 1200);
+      return () => clearTimeout(completeTimer);
     }
 
-    if (isTypingLine) return; // Evita múltiplas execuções
-
-    const currentLineText = codeLines[currentLine];
-    setIsTypingLine(true);
+    // Digita a linha atual
+    const lineText = codeLines[currentLine];
     setTypingText("");
-    
-    let charIndex = 0;
-    let isCancelled = false;
-    
-    const typingInterval = setInterval(() => {
-      if (isCancelled) {
-        clearInterval(typingInterval);
-        return;
-      }
+    let i = 0;
+    let cancelled = false;
 
-      if (charIndex < currentLineText.length) {
-        setTypingText(currentLineText.substring(0, charIndex + 1));
+    const typeNext = () => {
+      if (cancelled) return;
+      if (i < lineText.length) {
+        setTypingText(lineText.slice(0, i + 1));
         playTypingSound();
-        charIndex++;
+        i++;
+        typingTimerRef.current = window.setTimeout(typeNext, 45);
       } else {
-        clearInterval(typingInterval);
-        setIsTypingLine(false);
-        setTimeout(() => {
+        typingTimerRef.current = window.setTimeout(() => {
           setCurrentLine((prev) => prev + 1);
-        }, 100);
+        }, 120);
       }
-    }, 50); // Velocidade de digitação
+    };
+
+    typeNext();
 
     return () => {
-      isCancelled = true;
-      clearInterval(typingInterval);
+      cancelled = true;
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
     };
-  }, [showCode, currentLine, isTypingLine]);
+  }, [showCode, currentLine]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
@@ -198,7 +195,7 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
                     </span>
                   </div>
                 ))}
-                {isTypingLine && (
+                {showCode && currentLine < codeLines.length && (
                   <div className="leading-6">
                     <span className="text-gray-500 mr-4 select-none">{currentLine + 1}</span>
                     <span
