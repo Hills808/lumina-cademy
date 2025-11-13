@@ -436,67 +436,8 @@ npm run type-check
 
 ---
 
-## 👥 Contribuição
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
-
-### Guidelines de Contribuição
-
-- Mantenha o código limpo e bem documentado
-- Siga os padrões de código existentes
-- Teste suas alterações antes de submeter
-- Atualize a documentação quando necessário
-
----
-
-## 📝 Changelog
-
-### v1.0.0 (2024)
-- 🎉 Lançamento inicial do LUMINA
-- ✅ Sistema completo de autenticação
-- ✅ Gestão de turmas e matrículas
-- ✅ Biblioteca de materiais didáticos
-- ✅ Sistema de quizzes com avaliação automática
-- ✅ Calendário acadêmico integrado
-- ✅ Assistente virtual com IA
-- ✅ Dashboard com estatísticas e análises
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-## 📞 Suporte
-
-Para dúvidas, sugestões ou reportar problemas:
-
-- 📧 Email: suporte@lumina.edu
-- 🐛 Issues: Abra uma issue no repositório
-- 💬 Discussões: Use a aba Discussions do GitHub
-
----
-
-## 🌟 Agradecimentos
-
-Desenvolvido com ❤️ para melhorar a experiência educacional através da tecnologia.
-
-**LUMINA** - Iluminando o caminho do conhecimento com Inteligência Artificial.
-
----
-
 <div align="center">
 
 **[⬆ Voltar ao topo](#lumina-)**
-
-Made with ❤️ using React, TypeScript, and Modern Web Technologies
 
 </div>
