@@ -9,6 +9,7 @@ import { Brain, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useXPManager } from "@/hooks/useXPManager";
 
 interface UserProfile {
   full_name: string;
@@ -39,6 +40,7 @@ const Quizzes = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addXP, updateStreak } = useXPManager();
 
   useEffect(() => {
     checkAuth();
@@ -215,7 +217,20 @@ const Quizzes = () => {
                         <Button 
                           className="w-full" 
                           variant={profile.role === "teacher" ? "outline" : "default"}
-                          onClick={() => {
+                          onClick={async () => {
+                            if (profile.role === "student") {
+                              // Quando implementar: após completar quiz, adicionar XP
+                              // const score = quizResult.score;
+                              // const { data: { user } } = await supabase.auth.getUser();
+                              // if (user) {
+                              //   const xpAmount = score === 100 ? 50 : 25; // XP bonus para nota perfeita
+                              //   await addXP(user.id, xpAmount, score === 100 ? "quiz_perfect" : "quiz_completed", {
+                              //     quiz_id: quiz.id,
+                              //     score: score,
+                              //   });
+                              //   await updateStreak(user.id);
+                              // }
+                            }
                             toast({
                               title: "Em breve",
                               description: "Funcionalidade de fazer quiz em desenvolvimento",

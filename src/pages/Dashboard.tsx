@@ -4,8 +4,16 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Trophy, TrendingUp } from "lucide-react";
+import { BookOpen, Users, Target, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGamification } from "@/hooks/useGamification";
+import { XPBar } from "@/components/gamification/XPBar";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
+import { BadgeCard } from "@/components/gamification/BadgeCard";
+import { ActivityHeatmap } from "@/components/gamification/ActivityHeatmap";
+import { StatsCard } from "@/components/gamification/StatsCard";
+import { Leaderboard } from "@/components/gamification/Leaderboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UserProfile {
   full_name: string;
@@ -21,6 +29,7 @@ interface Stats {
 
 const Dashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
   const [stats, setStats] = useState<Stats>({
     classes: 0,
     students: 0,
@@ -29,6 +38,8 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  
+  const { userXP, badges, allBadges, activities, leaderboard } = useGamification(userId);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -41,6 +52,8 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
+
+    setUserId(session.user.id);
 
     // Buscar perfil e role do usuário
     const { data: profileData } = await supabase
@@ -159,93 +172,129 @@ const Dashboard = () => {
           </header>
 
           {/* Conteúdo Principal */}
-          <main className="flex-1 p-6 bg-background">
+          <main className="flex-1 p-6 bg-background overflow-y-auto">
             <div className="max-w-7xl mx-auto space-y-6">
-              {/* Título */}
-              <div>
-                <h2 className="text-3xl font-bold">Dashboard</h2>
-                <p className="text-muted-foreground">
-                  {profile.role === "student" 
-                    ? "Acompanhe seu progresso acadêmico" 
-                    : "Gerencie suas turmas e materiais"}
-                </p>
-              </div>
+              {/* XP Bar e Level */}
+              {userXP && (
+                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                  <CardContent className="pt-6">
+                    <XPBar currentXP={userXP.total_xp} level={userXP.level} />
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* Cards de estatísticas */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {profile.role === "student" ? "Materiais" : "Turmas Ativas"}
-                    </CardTitle>
-                    <BookOpen className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.classes}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {profile.role === "student" ? "disponíveis" : "no momento"}
+              {/* Tabs para organizar conteúdo */}
+              <Tabs defaultValue="overview" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+                  <TabsTrigger value="badges">Conquistas</TabsTrigger>
+                  <TabsTrigger value="ranking">Ranking</TabsTrigger>
+                </TabsList>
+
+                {/* Tab: Visão Geral */}
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Stats Cards */}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <StatsCard
+                      title={profile.role === "student" ? "Turmas" : "Turmas Ativas"}
+                      value={stats.classes}
+                      description={profile.role === "student" ? "matriculado" : "no momento"}
+                      icon={BookOpen}
+                      colorClass="from-blue-500/20 to-cyan-500/20 border-blue-500/50"
+                    />
+                    <StatsCard
+                      title={profile.role === "student" ? "Materiais" : "Alunos"}
+                      value={profile.role === "student" ? stats.materials : stats.students}
+                      description={profile.role === "student" ? "disponíveis" : "cadastrados"}
+                      icon={Users}
+                      colorClass="from-green-500/20 to-emerald-500/20 border-green-500/50"
+                    />
+                    <StatsCard
+                      title="Total XP"
+                      value={userXP?.total_xp || 0}
+                      description="pontos de experiência"
+                      icon={Zap}
+                      colorClass="from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
+                    />
+                    <StatsCard
+                      title="Conquistas"
+                      value={badges?.length || 0}
+                      description={`de ${allBadges?.length || 0} badges`}
+                      icon={Target}
+                      colorClass="from-purple-500/20 to-pink-500/20 border-purple-500/50"
+                    />
+                  </div>
+
+                  {/* Streak Counter */}
+                  {userXP && (
+                    <StreakCounter
+                      currentStreak={userXP.current_streak}
+                      longestStreak={userXP.longest_streak}
+                    />
+                  )}
+
+                  {/* Activity Heatmap */}
+                  {activities && (
+                    <ActivityHeatmap
+                      activities={activities.map((a) => ({
+                        date: a.activity_date,
+                        count: 1,
+                      }))}
+                    />
+                  )}
+                </TabsContent>
+
+                {/* Tab: Conquistas */}
+                <TabsContent value="badges" className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Suas Conquistas</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Desbloqueie badges completando atividades e desafios
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
 
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {profile.role === "student" ? "Turmas" : "Alunos"}
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{profile.role === "student" ? stats.classes : stats.students}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {profile.role === "student" ? "matriculado" : "cadastrados"}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {allBadges?.map((badge) => {
+                      const userBadge = badges?.find((ub) => ub.badge_id === badge.id);
+                      return (
+                        <BadgeCard
+                          key={badge.id}
+                          name={badge.name}
+                          description={badge.description}
+                          icon={badge.icon}
+                          unlocked={!!userBadge}
+                          unlockedAt={userBadge?.unlocked_at}
+                          category={badge.category}
+                          xpReward={badge.xp_reward}
+                        />
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                {/* Tab: Ranking */}
+                <TabsContent value="ranking" className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Ranking Global</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Veja como você se compara aos outros estudantes
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
 
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {profile.role === "student" ? "Materiais" : "Materiais"}
-                    </CardTitle>
-                    <Trophy className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.materials}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {profile.role === "student" ? "disponíveis" : "publicados"}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Progresso</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">0%</div>
-                    <p className="text-xs text-muted-foreground">este mês</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Área de boas-vindas */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Bem-vindo ao LUMINA!</CardTitle>
-                  <CardDescription>
-                    {profile.role === "student" 
-                      ? "Esta é sua área do aluno. Explore os materiais, acompanhe suas turmas e use o assistente IA para melhorar seus estudos."
-                      : "Esta é sua área do professor. Gerencie suas turmas, publique materiais e use a IA para criar conteúdo educacional."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    As funcionalidades completas serão implementadas em breve. Por enquanto, explore o menu lateral para conhecer as diferentes seções.
-                  </p>
-                </CardContent>
-              </Card>
+                  {leaderboard && (
+                    <Leaderboard
+                      entries={leaderboard.map((entry, index) => ({
+                        userId: entry.user_id,
+                        userName: `Usuário ${index + 1}`,
+                        totalXP: entry.total_xp,
+                        level: entry.level,
+                        rank: index + 1,
+                      }))}
+                      currentUserId={userId}
+                    />
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </main>
         </div>
