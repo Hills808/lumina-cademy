@@ -4,6 +4,8 @@
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg)](https://fastapi.tiangolo.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3+-61dafb.svg)](https://reactjs.org/)
 
@@ -71,6 +73,18 @@ Projetar e implementar um sistema acadêmico integrado que permita gerenciar tur
 
 ## 💻 Tecnologias Utilizadas
 
+### Backend Principal
+
+| Tecnologia | Versão | Descrição |
+|-----------|--------|-----------|
+| **Python** | 3.11+ | Linguagem principal do backend |
+| **FastAPI** | 0.104+ | Framework web moderno e assíncrono para APIs REST |
+| **SQLAlchemy** | 2.0+ | ORM para mapeamento objeto-relacional |
+| **Pydantic** | 2.5+ | Validação de dados e serialização |
+| **Uvicorn** | 0.24+ | Servidor ASGI de alta performance |
+| **bcrypt** | 4.1+ | Hashing seguro de senhas |
+| **PyJWT** | 2.8+ | Geração e validação de tokens JWT |
+
 ### Frontend
 
 | Tecnologia | Versão | Descrição |
@@ -83,11 +97,12 @@ Projetar e implementar um sistema acadêmico integrado que permita gerenciar tur
 | **React Router** | 6.0+ | Roteamento e navegação SPA |
 | **TanStack Query** | 5.0+ | Gerenciamento de estado assíncrono e cache |
 
-### Backend & Infraestrutura
+### Banco de Dados & Infraestrutura
 
 | Tecnologia | Descrição |
 |-----------|-----------|
 | **PostgreSQL** | Banco de dados relacional robusto e escalável |
+| **Supabase** | Plataforma de backend como serviço (BaaS) |
 | **Edge Functions** | Funções serverless para lógica customizada |
 | **Row Level Security (RLS)** | Segurança granular a nível de linha no banco |
 | **Real-time Subscriptions** | Atualizações em tempo real via WebSockets |
@@ -107,36 +122,79 @@ Projetar e implementar um sistema acadêmico integrado que permita gerenciar tur
 
 Certifique-se de ter instalado:
 
+- [Python](https://www.python.org/) (versão 3.11 ou superior)
 - [Node.js](https://nodejs.org/) (versão 18.0 ou superior)
 - npm (incluído com Node.js) ou [Bun](https://bun.sh/)
+- [PostgreSQL](https://www.postgresql.org/) (versão 14 ou superior)
 - Git para controle de versão
 
 ### Passo a Passo
 
+#### 1. Backend Python
+
 ```bash
-# 1. Clone o repositório
+# Clone o repositório
 git clone <URL_DO_REPOSITORIO>
 
-# 2. Navegue até o diretório do projeto
+# Navegue até o diretório do backend
+cd lumina/python-backend
+
+# Crie e ative um ambiente virtual
+python -m venv venv
+source venv/bin/activate  # No Windows: venv\Scripts\activate
+
+# Instale as dependências Python
+pip install -r requirements.txt
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações do banco de dados
+
+# Execute as migrações do banco de dados (se aplicável)
+# python -m alembic upgrade head
+
+# Inicie o servidor FastAPI
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+O backend estará disponível em **http://localhost:8000**
+Documentação da API em **http://localhost:8000/docs**
+
+#### 2. Frontend React
+
+```bash
+# Navegue até o diretório raiz do projeto
 cd lumina
 
-# 3. Instale as dependências
+# Instale as dependências do frontend
 npm install
 # ou com Bun
 bun install
 
-# 4. Configure as variáveis de ambiente
-# O arquivo .env é gerado automaticamente com as credenciais do backend
+# Configure as variáveis de ambiente
+# O arquivo .env é gerado automaticamente com as credenciais do Supabase
 
-# 5. Inicie o servidor de desenvolvimento
+# Inicie o servidor de desenvolvimento
 npm run dev
 # ou com Bun
 bun dev
 ```
 
-O projeto estará disponível em **http://localhost:5173**
+O frontend estará disponível em **http://localhost:5173**
 
 ### Comandos Disponíveis
+
+#### Backend Python
+
+| Comando | Descrição |
+|---------|-----------|
+| `uvicorn api.main:app --reload` | Inicia o servidor FastAPI em modo dev |
+| `python -m pytest` | Executa os testes unitários |
+| `python -m pytest --cov` | Executa testes com cobertura |
+| `python cli/admin_tools.py` | Ferramentas administrativas CLI |
+| `python cli/student_tools.py` | Ferramentas para estudantes CLI |
+
+#### Frontend React
 
 | Comando | Descrição |
 |---------|-----------|
@@ -194,18 +252,37 @@ lumina/
 │   ├── index.css            # Estilos globais e design tokens
 │   └── vite-env.d.ts        # Tipos do Vite
 │
-├── supabase/                # Configuração do backend
+├── python-backend/          # Backend principal da aplicação
+│   ├── api/                 # Endpoints da API REST
+│   │   └── main.py          # Aplicação FastAPI principal
+│   ├── models/              # Modelos de dados SQLAlchemy
+│   │   ├── user.py          # Modelo de usuário
+│   │   ├── class_model.py   # Modelo de turmas
+│   │   ├── material.py      # Modelo de materiais
+│   │   └── quiz.py          # Modelos de quizzes
+│   ├── services/            # Lógica de negócio
+│   │   ├── auth_service.py  # Autenticação e JWT
+│   │   ├── class_service.py # Gestão de turmas
+│   │   └── quiz_service.py  # Sistema de avaliações
+│   ├── utils/               # Utilitários e helpers
+│   │   ├── validators.py    # Validação de dados
+│   │   ├── helpers.py       # Funções auxiliares
+│   │   └── exceptions.py    # Exceções customizadas
+│   ├── config/              # Configurações
+│   │   └── settings.py      # Configurações da aplicação
+│   ├── cli/                 # Ferramentas de linha de comando
+│   │   ├── admin_tools.py   # Ferramentas administrativas
+│   │   └── student_tools.py # Ferramentas para estudantes
+│   ├── tests/               # Testes unitários e de integração
+│   ├── requirements.txt     # Dependências Python
+│   ├── .env.example         # Exemplo de variáveis de ambiente
+│   └── README.md            # Documentação do backend
+│
+├── supabase/                # Integração com Supabase
 │   ├── config.toml          # Configuração do Supabase (auto-gerado)
 │   ├── functions/           # Edge Functions serverless
 │   │   └── chat-assistant/  # Função do assistente de IA
 │   └── migrations/          # Migrações do banco de dados
-│
-├── python-backend/          # Estrutura de referência Python (acadêmica)
-│   ├── api/                 # Endpoints da API
-│   ├── models/              # Modelos de dados
-│   ├── services/            # Lógica de negócio
-│   ├── utils/               # Utilitários
-│   └── README.md            # Documentação da estrutura
 │
 ├── .env                     # Variáveis de ambiente (auto-gerado)
 ├── .gitignore              # Arquivos ignorados pelo Git
