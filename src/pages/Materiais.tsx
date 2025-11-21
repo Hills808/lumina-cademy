@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, BookOpen, Trash2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useXPManager } from "@/hooks/useXPManager";
 
 interface UserProfile {
   full_name: string;
@@ -58,6 +59,7 @@ const Materiais = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const classIdFromUrl = searchParams.get("class");
+  const { addXP, updateStreak } = useXPManager();
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -220,9 +222,21 @@ const Materiais = () => {
     if (profile) await loadMaterials(profile.role);
   };
 
-  const handleViewMaterial = (material: Material) => {
+  const handleViewMaterial = async (material: Material) => {
     setSelectedMaterial(material);
     setViewDialogOpen(true);
+
+    // Se for aluno, adicionar XP por ler material
+    if (profile?.role === "student") {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await addXP(user.id, 10, "material_read", {
+          material_id: material.id,
+          material_title: material.title,
+        });
+        await updateStreak(user.id);
+      }
+    }
   };
 
   if (loading) {
