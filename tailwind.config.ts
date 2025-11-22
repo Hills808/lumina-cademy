@@ -95,6 +95,11 @@ export default {
         "slide-up": {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" }
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px) translateX(0px)" },
+          "33%": { transform: "translateY(-20px) translateX(10px)" },
+          "66%": { transform: "translateY(-10px) translateX(-10px)" }
         }
       },
       animation: {
@@ -105,7 +110,8 @@ export default {
         "typing": "typing 3s steps(40) forwards",
         "blink": "blink 1s step-end infinite",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
-        "slide-up": "slide-up 0.5s ease-out"
+        "slide-up": "slide-up 0.5s ease-out",
+        "float": "float 6s ease-in-out infinite"
       },
     },
   },
