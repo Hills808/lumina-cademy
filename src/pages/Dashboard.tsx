@@ -48,16 +48,24 @@ const Dashboard = () => {
   useEffect(() => {
     checkAuthAndLoadData();
     
-    // Registrar login diário para missões
+    // Registrar login diário para missões - apenas para alunos
     const registerDailyLogin = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Atualizar progresso da missão de login diário
-        await supabase.rpc("update_mission_progress", {
-          p_user_id: user.id,
-          p_requirement_type: "daily_login",
-          p_increment: 1,
-        });
+        // Verificar se é aluno antes de atualizar missões
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (roleData?.role === "student") {
+          await supabase.rpc("update_mission_progress", {
+            p_user_id: user.id,
+            p_requirement_type: "daily_login",
+            p_increment: 1,
+          });
+        }
       }
     };
     registerDailyLogin();
@@ -177,7 +185,7 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <MissionCompletionToast userId={userId} />
+      {profile.role === "student" && <MissionCompletionToast userId={userId} />}
       <div className="min-h-screen flex w-full">
         <AppSidebar userRole={profile.role} />
         
@@ -193,146 +201,241 @@ const Dashboard = () => {
           {/* Conteúdo Principal */}
           <main className="flex-1 p-6 bg-background overflow-y-auto">
             <div className="max-w-7xl mx-auto space-y-6">
-              {/* XP Bar e Level */}
-              {userXP && (
-                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                  <CardContent className="pt-6">
-                    <XPBar currentXP={userXP.total_xp} level={userXP.level} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Tabs para organizar conteúdo */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-                  <TabsTrigger value="missions">Missões</TabsTrigger>
-                  <TabsTrigger value="badges">Conquistas</TabsTrigger>
-                  <TabsTrigger value="ranking">Ranking</TabsTrigger>
-                </TabsList>
-
-                {/* Tab: Visão Geral */}
-                <TabsContent value="overview" className="space-y-6">
-                  {/* Stats Cards */}
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <StatsCard
-                      title={profile.role === "student" ? "Turmas" : "Turmas Ativas"}
-                      value={stats.classes}
-                      description={profile.role === "student" ? "matriculado" : "no momento"}
-                      icon={BookOpen}
-                      colorClass="from-blue-500/20 to-cyan-500/20 border-blue-500/50"
-                    />
-                    <StatsCard
-                      title={profile.role === "student" ? "Materiais" : "Alunos"}
-                      value={profile.role === "student" ? stats.materials : stats.students}
-                      description={profile.role === "student" ? "disponíveis" : "cadastrados"}
-                      icon={Users}
-                      colorClass="from-green-500/20 to-emerald-500/20 border-green-500/50"
-                    />
-                    <StatsCard
-                      title="Total XP"
-                      value={userXP?.total_xp || 0}
-                      description="pontos de experiência"
-                      icon={Zap}
-                      colorClass="from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
-                    />
-                    <StatsCard
-                      title="Conquistas"
-                      value={badges?.length || 0}
-                      description={`de ${allBadges?.length || 0} badges`}
-                      icon={Target}
-                      colorClass="from-purple-500/20 to-pink-500/20 border-purple-500/50"
-                    />
-                  </div>
-
-                  {/* Missões Widget */}
-                  <MissionsWidget 
-                    userId={userId} 
-                    onViewAll={() => setActiveTab("missions")} 
-                  />
-
-                  {/* Streak Counter */}
+              {profile.role === "student" ? (
+                <>
+                  {/* XP Bar e Level - Apenas Alunos */}
                   {userXP && (
-                    <StreakCounter
-                      currentStreak={userXP.current_streak}
-                      longestStreak={userXP.longest_streak}
-                    />
+                    <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                      <CardContent className="pt-6">
+                        <XPBar currentXP={userXP.total_xp} level={userXP.level} />
+                      </CardContent>
+                    </Card>
                   )}
 
-                  {/* Activity Heatmap */}
-                  {activities && (
-                    <ActivityHeatmap
-                      activities={activities.map((a) => ({
-                        date: a.activity_date,
-                        count: 1,
-                      }))}
-                    />
-                  )}
-                </TabsContent>
+                  {/* Tabs para organizar conteúdo - Apenas Alunos */}
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+                      <TabsTrigger value="missions">Missões</TabsTrigger>
+                      <TabsTrigger value="badges">Conquistas</TabsTrigger>
+                      <TabsTrigger value="ranking">Ranking</TabsTrigger>
+                    </TabsList>
 
-                {/* Tab: Missões */}
-                <TabsContent value="missions" className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Suas Missões</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Complete missões diárias e semanais para ganhar XP bonus
-                    </p>
-                  </div>
-
-                  <MissionsPanel userId={userId} />
-                </TabsContent>
-
-                {/* Tab: Conquistas */}
-                <TabsContent value="badges" className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">Suas Conquistas</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Desbloqueie badges completando atividades e desafios
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {allBadges?.map((badge) => {
-                      const userBadge = badges?.find((ub) => ub.badge_id === badge.id);
-                      return (
-                        <BadgeCard
-                          key={badge.id}
-                          name={badge.name}
-                          description={badge.description}
-                          icon={badge.icon}
-                          unlocked={!!userBadge}
-                          unlockedAt={userBadge?.unlocked_at}
-                          category={badge.category}
-                          xpReward={badge.xp_reward}
+                    {/* Tab: Visão Geral */}
+                    <TabsContent value="overview" className="space-y-6">
+                      {/* Stats Cards */}
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <StatsCard
+                          title="Turmas"
+                          value={stats.classes}
+                          description="matriculado"
+                          icon={BookOpen}
+                          colorClass="from-blue-500/20 to-cyan-500/20 border-blue-500/50"
                         />
-                      );
-                    })}
-                  </div>
-                </TabsContent>
+                        <StatsCard
+                          title="Materiais"
+                          value={stats.materials}
+                          description="disponíveis"
+                          icon={Users}
+                          colorClass="from-green-500/20 to-emerald-500/20 border-green-500/50"
+                        />
+                        <StatsCard
+                          title="Total XP"
+                          value={userXP?.total_xp || 0}
+                          description="pontos de experiência"
+                          icon={Zap}
+                          colorClass="from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
+                        />
+                        <StatsCard
+                          title="Conquistas"
+                          value={badges?.length || 0}
+                          description={`de ${allBadges?.length || 0} badges`}
+                          icon={Target}
+                          colorClass="from-purple-500/20 to-pink-500/20 border-purple-500/50"
+                        />
+                      </div>
 
-                {/* Tab: Ranking */}
-                <TabsContent value="ranking" className="space-y-6">
+                      {/* Missões Widget */}
+                      <MissionsWidget 
+                        userId={userId} 
+                        onViewAll={() => setActiveTab("missions")} 
+                      />
+
+                      {/* Streak Counter */}
+                      {userXP && (
+                        <StreakCounter
+                          currentStreak={userXP.current_streak}
+                          longestStreak={userXP.longest_streak}
+                        />
+                      )}
+
+                      {/* Activity Heatmap */}
+                      {activities && (
+                        <ActivityHeatmap
+                          activities={activities.map((a) => ({
+                            date: a.activity_date,
+                            count: 1,
+                          }))}
+                        />
+                      )}
+                    </TabsContent>
+
+                    {/* Tab: Missões */}
+                    <TabsContent value="missions" className="space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Suas Missões</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Complete missões diárias e semanais para ganhar XP bonus
+                        </p>
+                      </div>
+
+                      <MissionsPanel userId={userId} />
+                    </TabsContent>
+
+                    {/* Tab: Conquistas */}
+                    <TabsContent value="badges" className="space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Suas Conquistas</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Desbloqueie badges completando atividades e desafios
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        {allBadges?.map((badge) => {
+                          const userBadge = badges?.find((ub) => ub.badge_id === badge.id);
+                          return (
+                            <BadgeCard
+                              key={badge.id}
+                              name={badge.name}
+                              description={badge.description}
+                              icon={badge.icon}
+                              unlocked={!!userBadge}
+                              unlockedAt={userBadge?.unlocked_at}
+                              category={badge.category}
+                              xpReward={badge.xp_reward}
+                            />
+                          );
+                        })}
+                      </div>
+                    </TabsContent>
+
+                    {/* Tab: Ranking */}
+                    <TabsContent value="ranking" className="space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Ranking Global</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Veja como você se compara aos outros estudantes
+                        </p>
+                      </div>
+
+                      {leaderboard && (
+                        <Leaderboard
+                          entries={leaderboard.map((entry, index) => ({
+                            userId: entry.user_id,
+                            userName: `Usuário ${index + 1}`,
+                            totalXP: entry.total_xp,
+                            level: entry.level,
+                            rank: index + 1,
+                          }))}
+                          currentUserId={userId}
+                        />
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </>
+              ) : (
+                <>
+                  {/* Dashboard do Professor - Sem Gamificação */}
                   <div>
-                    <h3 className="text-2xl font-bold mb-2">Ranking Global</h3>
+                    <h2 className="text-3xl font-bold mb-2">Painel do Professor</h2>
                     <p className="text-muted-foreground mb-6">
-                      Veja como você se compara aos outros estudantes
+                      Gerencie suas turmas, materiais e acompanhe seus alunos
                     </p>
                   </div>
 
-                  {leaderboard && (
-                    <Leaderboard
-                      entries={leaderboard.map((entry, index) => ({
-                        userId: entry.user_id,
-                        userName: `Usuário ${index + 1}`,
-                        totalXP: entry.total_xp,
-                        level: entry.level,
-                        rank: index + 1,
-                      }))}
-                      currentUserId={userId}
-                    />
-                  )}
-                </TabsContent>
-              </Tabs>
+                  {/* Stats Cards - Professores */}
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Turmas Ativas</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.classes}</div>
+                        <p className="text-xs text-muted-foreground">
+                          turmas no momento
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total de Alunos</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.students}</div>
+                        <p className="text-xs text-muted-foreground">
+                          alunos matriculados
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Materiais Publicados</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.materials}</div>
+                        <p className="text-xs text-muted-foreground">
+                          materiais disponíveis
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Cards de Ação Rápida */}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/turmas")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          Gerenciar Turmas
+                        </CardTitle>
+                        <CardDescription>
+                          Crie, edite e gerencie suas turmas
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/materiais")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          Publicar Materiais
+                        </CardTitle>
+                        <CardDescription>
+                          Adicione novos materiais de estudo
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/quiz-automatico")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Target className="h-5 w-5" />
+                          Quiz Automático IA
+                        </CardTitle>
+                        <CardDescription>
+                          Configure quizzes gerados por IA
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </div>
+                </>
+              )}
             </div>
           </main>
         </div>
