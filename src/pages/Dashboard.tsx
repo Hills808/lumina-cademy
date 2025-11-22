@@ -1,77 +1,32 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, Target, Zap } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGamification } from "@/hooks/useGamification";
-import { XPBar } from "@/components/gamification/XPBar";
-import { StreakCounter } from "@/components/gamification/StreakCounter";
-import { BadgeCard } from "@/components/gamification/BadgeCard";
-import { ActivityHeatmap } from "@/components/gamification/ActivityHeatmap";
-import { StatsCard } from "@/components/gamification/StatsCard";
-import { Leaderboard } from "@/components/gamification/Leaderboard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MissionsPanel } from "@/components/missions/MissionsPanel";
-import { MissionCompletionToast } from "@/components/missions/MissionCompletionToast";
-import { MissionsWidget } from "@/components/missions/MissionsWidget";
+import { BookOpen, Users, Target } from "lucide-react";
 
 interface UserProfile {
   full_name: string;
   role: "student" | "teacher";
 }
 
-interface Stats {
-  classes: number;
-  students: number;
-  materials: number;
-  progress: number;
-}
-
-const Dashboard = () => {
+export default function Dashboard() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [stats, setStats] = useState<Stats>({
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
     classes: 0,
     students: 0,
     materials: 0,
-    progress: 0,
   });
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  
-  const { userXP, badges, allBadges, activities, leaderboard } = useGamification(userId);
 
   useEffect(() => {
-    checkAuthAndLoadData();
-    
-    // Registrar login diário para missões - apenas para alunos
-    const registerDailyLogin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Verificar se é aluno antes de atualizar missões
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-        
-        if (roleData?.role === "student") {
-          await supabase.rpc("update_mission_progress", {
-            p_user_id: user.id,
-            p_requirement_type: "daily_login",
-            p_increment: 1,
-          });
-        }
-      }
-    };
-    registerDailyLogin();
+    checkAuth();
   }, []);
 
-  const checkAuthAndLoadData = async () => {
+  const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -79,28 +34,25 @@ const Dashboard = () => {
       return;
     }
 
-    setUserId(session.user.id);
-
-    // Buscar perfil e role do usuário
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", session.user.id)
-      .single();
-
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", session.user.id)
       .single();
 
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", session.user.id)
+      .single();
+
     if (profileData && roleData) {
-      const userProfile = {
+      setProfile({
         full_name: profileData.full_name,
         role: roleData.role as "student" | "teacher",
-      };
-      setProfile(userProfile);
-      await loadStats(userProfile.role, session.user.id);
+      });
+
+      await loadStats(roleData.role, session.user.id);
     }
 
     setLoading(false);
@@ -108,7 +60,6 @@ const Dashboard = () => {
 
   const loadStats = async (role: "student" | "teacher", userId: string) => {
     if (role === "teacher") {
-      // Buscar estatísticas do professor
       const { count: classCount } = await supabase
         .from("classes")
         .select("*", { count: "exact", head: true })
@@ -138,10 +89,8 @@ const Dashboard = () => {
         classes: classCount || 0,
         students: studentCount,
         materials: materialCount || 0,
-        progress: 0,
       });
     } else {
-      // Buscar estatísticas do aluno
       const { count: classCount } = await supabase
         .from("class_enrollments")
         .select("*", { count: "exact", head: true })
@@ -166,7 +115,6 @@ const Dashboard = () => {
         classes: classCount || 0,
         students: 0,
         materials: materialCount,
-        progress: 0,
       });
     }
   };
@@ -179,18 +127,14 @@ const Dashboard = () => {
     );
   }
 
-  if (!profile) {
-    return null;
-  }
+  if (!profile) return null;
 
   return (
     <SidebarProvider>
-      {profile.role === "student" && <MissionCompletionToast userId={userId} />}
       <div className="min-h-screen flex w-full">
         <AppSidebar userRole={profile.role} />
         
         <div className="flex-1 flex flex-col">
-          {/* Header com trigger do sidebar */}
           <header className="h-16 border-b border-border flex items-center px-4 bg-card">
             <SidebarTrigger />
             <h1 className="ml-4 text-xl font-semibold">
@@ -198,155 +142,10 @@ const Dashboard = () => {
             </h1>
           </header>
 
-          {/* Conteúdo Principal */}
-          <main className="flex-1 p-6 bg-background overflow-y-auto">
+          <main className="flex-1 p-6 bg-background">
             <div className="max-w-7xl mx-auto space-y-6">
-              {profile.role === "student" ? (
+              {profile.role === "teacher" && (
                 <>
-                  {/* XP Bar e Level - Apenas Alunos */}
-                  {userXP && (
-                    <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                      <CardContent className="pt-6">
-                        <XPBar currentXP={userXP.total_xp} level={userXP.level} />
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Tabs para organizar conteúdo - Apenas Alunos */}
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-                      <TabsTrigger value="missions">Missões</TabsTrigger>
-                      <TabsTrigger value="badges">Conquistas</TabsTrigger>
-                      <TabsTrigger value="ranking">Ranking</TabsTrigger>
-                    </TabsList>
-
-                    {/* Tab: Visão Geral */}
-                    <TabsContent value="overview" className="space-y-6">
-                      {/* Stats Cards */}
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <StatsCard
-                          title="Turmas"
-                          value={stats.classes}
-                          description="matriculado"
-                          icon={BookOpen}
-                          colorClass="from-blue-500/20 to-cyan-500/20 border-blue-500/50"
-                        />
-                        <StatsCard
-                          title="Materiais"
-                          value={stats.materials}
-                          description="disponíveis"
-                          icon={Users}
-                          colorClass="from-green-500/20 to-emerald-500/20 border-green-500/50"
-                        />
-                        <StatsCard
-                          title="Total XP"
-                          value={userXP?.total_xp || 0}
-                          description="pontos de experiência"
-                          icon={Zap}
-                          colorClass="from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
-                        />
-                        <StatsCard
-                          title="Conquistas"
-                          value={badges?.length || 0}
-                          description={`de ${allBadges?.length || 0} badges`}
-                          icon={Target}
-                          colorClass="from-purple-500/20 to-pink-500/20 border-purple-500/50"
-                        />
-                      </div>
-
-                      {/* Missões Widget */}
-                      <MissionsWidget 
-                        userId={userId} 
-                        onViewAll={() => setActiveTab("missions")} 
-                      />
-
-                      {/* Streak Counter */}
-                      {userXP && (
-                        <StreakCounter
-                          currentStreak={userXP.current_streak}
-                          longestStreak={userXP.longest_streak}
-                        />
-                      )}
-
-                      {/* Activity Heatmap */}
-                      {activities && (
-                        <ActivityHeatmap
-                          activities={activities.map((a) => ({
-                            date: a.activity_date,
-                            count: 1,
-                          }))}
-                        />
-                      )}
-                    </TabsContent>
-
-                    {/* Tab: Missões */}
-                    <TabsContent value="missions" className="space-y-6">
-                      <div>
-                        <h3 className="text-2xl font-bold mb-2">Suas Missões</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Complete missões diárias e semanais para ganhar XP bonus
-                        </p>
-                      </div>
-
-                      <MissionsPanel userId={userId} />
-                    </TabsContent>
-
-                    {/* Tab: Conquistas */}
-                    <TabsContent value="badges" className="space-y-6">
-                      <div>
-                        <h3 className="text-2xl font-bold mb-2">Suas Conquistas</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Desbloqueie badges completando atividades e desafios
-                        </p>
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        {allBadges?.map((badge) => {
-                          const userBadge = badges?.find((ub) => ub.badge_id === badge.id);
-                          return (
-                            <BadgeCard
-                              key={badge.id}
-                              name={badge.name}
-                              description={badge.description}
-                              icon={badge.icon}
-                              unlocked={!!userBadge}
-                              unlockedAt={userBadge?.unlocked_at}
-                              category={badge.category}
-                              xpReward={badge.xp_reward}
-                            />
-                          );
-                        })}
-                      </div>
-                    </TabsContent>
-
-                    {/* Tab: Ranking */}
-                    <TabsContent value="ranking" className="space-y-6">
-                      <div>
-                        <h3 className="text-2xl font-bold mb-2">Ranking Global</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Veja como você se compara aos outros estudantes
-                        </p>
-                      </div>
-
-                      {leaderboard && (
-                        <Leaderboard
-                          entries={leaderboard.map((entry, index) => ({
-                            userId: entry.user_id,
-                            userName: `Usuário ${index + 1}`,
-                            totalXP: entry.total_xp,
-                            level: entry.level,
-                            rank: index + 1,
-                          }))}
-                          currentUserId={userId}
-                        />
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </>
-              ) : (
-                <>
-                  {/* Dashboard do Professor - Sem Gamificação */}
                   <div>
                     <h2 className="text-3xl font-bold mb-2">Painel do Professor</h2>
                     <p className="text-muted-foreground mb-6">
@@ -354,7 +153,6 @@ const Dashboard = () => {
                     </p>
                   </div>
 
-                  {/* Stats Cards - Professores */}
                   <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -396,7 +194,6 @@ const Dashboard = () => {
                     </Card>
                   </div>
 
-                  {/* Cards de Ação Rápida */}
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/turmas")}>
                       <CardHeader>
@@ -436,12 +233,100 @@ const Dashboard = () => {
                   </div>
                 </>
               )}
+
+              {profile.role === "student" && (
+                <>
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">Painel do Aluno</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Acesse suas turmas e materiais de estudo
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Turmas</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.classes}</div>
+                        <p className="text-xs text-muted-foreground">
+                          matriculado
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Materiais</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stats.materials}</div>
+                        <p className="text-xs text-muted-foreground">
+                          disponíveis
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Progresso</CardTitle>
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">-</div>
+                        <p className="text-xs text-muted-foreground">
+                          em desenvolvimento
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/turmas")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          Minhas Turmas
+                        </CardTitle>
+                        <CardDescription>
+                          Veja suas turmas e materiais
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/materiais")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          Materiais de Estudo
+                        </CardTitle>
+                        <CardDescription>
+                          Acesse o conteúdo das aulas
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/quizzes")}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Target className="h-5 w-5" />
+                          Quizzes
+                        </CardTitle>
+                        <CardDescription>
+                          Faça os quizzes disponíveis
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </div>
+                </>
+              )}
             </div>
           </main>
         </div>
       </div>
     </SidebarProvider>
   );
-};
-
-export default Dashboard;
+}
