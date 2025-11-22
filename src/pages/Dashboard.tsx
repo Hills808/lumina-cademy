@@ -14,6 +14,9 @@ import { ActivityHeatmap } from "@/components/gamification/ActivityHeatmap";
 import { StatsCard } from "@/components/gamification/StatsCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MissionsPanel } from "@/components/missions/MissionsPanel";
+import { MissionCompletionToast } from "@/components/missions/MissionCompletionToast";
+import { MissionsWidget } from "@/components/missions/MissionsWidget";
 
 interface UserProfile {
   full_name: string;
@@ -30,6 +33,7 @@ interface Stats {
 const Dashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState<Stats>({
     classes: 0,
     students: 0,
@@ -43,6 +47,20 @@ const Dashboard = () => {
 
   useEffect(() => {
     checkAuthAndLoadData();
+    
+    // Registrar login diário para missões
+    const registerDailyLogin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Atualizar progresso da missão de login diário
+        await supabase.rpc("update_mission_progress", {
+          p_user_id: user.id,
+          p_requirement_type: "daily_login",
+          p_increment: 1,
+        });
+      }
+    };
+    registerDailyLogin();
   }, []);
 
   const checkAuthAndLoadData = async () => {
@@ -159,6 +177,7 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
+      <MissionCompletionToast userId={userId} />
       <div className="min-h-screen flex w-full">
         <AppSidebar userRole={profile.role} />
         
@@ -184,9 +203,10 @@ const Dashboard = () => {
               )}
 
               {/* Tabs para organizar conteúdo */}
-              <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+                  <TabsTrigger value="missions">Missões</TabsTrigger>
                   <TabsTrigger value="badges">Conquistas</TabsTrigger>
                   <TabsTrigger value="ranking">Ranking</TabsTrigger>
                 </TabsList>
@@ -225,6 +245,12 @@ const Dashboard = () => {
                     />
                   </div>
 
+                  {/* Missões Widget */}
+                  <MissionsWidget 
+                    userId={userId} 
+                    onViewAll={() => setActiveTab("missions")} 
+                  />
+
                   {/* Streak Counter */}
                   {userXP && (
                     <StreakCounter
@@ -242,6 +268,18 @@ const Dashboard = () => {
                       }))}
                     />
                   )}
+                </TabsContent>
+
+                {/* Tab: Missões */}
+                <TabsContent value="missions" className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">Suas Missões</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Complete missões diárias e semanais para ganhar XP bonus
+                    </p>
+                  </div>
+
+                  <MissionsPanel userId={userId} />
                 </TabsContent>
 
                 {/* Tab: Conquistas */}

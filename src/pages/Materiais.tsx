@@ -59,7 +59,17 @@ const Materiais = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const classIdFromUrl = searchParams.get("class");
-  const { addXP, updateStreak } = useXPManager();
+  
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const { addXP, updateStreak } = useXPManager(currentUserId);
+
+  useEffect(() => {
+    const loadUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setCurrentUserId(user.id);
+    };
+    loadUserId();
+  }, []);
 
   useEffect(() => {
     checkAuthAndLoadData();

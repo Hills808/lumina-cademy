@@ -233,6 +233,48 @@ export type Database = {
           },
         ]
       }
+      missions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          is_active: boolean
+          mission_type: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          xp_reward: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          mission_type: string
+          name: string
+          requirement_type: string
+          requirement_value?: number
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          mission_type?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -447,6 +489,50 @@ export type Database = {
           },
         ]
       }
+      user_missions: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          mission_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          mission_id: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          mission_id?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -519,6 +605,46 @@ export type Database = {
           new_total_xp: number
         }[]
       }
+      assign_daily_missions: {
+        Args: { p_user_id: string }
+        Returns: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          mission_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_missions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      assign_weekly_missions: {
+        Args: { p_user_id: string }
+        Returns: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          mission_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_missions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       calculate_level: { Args: { xp: number }; Returns: number }
       check_and_unlock_badges: {
         Args: { p_user_id: string }
@@ -540,6 +666,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      cleanup_expired_missions: { Args: never; Returns: number }
       generate_class_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -555,6 +682,30 @@ export type Database = {
       is_student_enrolled: {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
+      }
+      update_mission_progress: {
+        Args: {
+          p_increment?: number
+          p_requirement_type: string
+          p_user_id: string
+        }
+        Returns: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          mission_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_missions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       update_user_streak: { Args: { p_user_id: string }; Returns: number }
     }

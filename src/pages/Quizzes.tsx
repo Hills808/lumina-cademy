@@ -38,9 +38,18 @@ const Quizzes = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addXP, updateStreak } = useXPManager();
+  const { addXP, updateStreak } = useXPManager(currentUserId);
+
+  useEffect(() => {
+    const loadUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setCurrentUserId(user.id);
+    };
+    loadUserId();
+  }, []);
 
   useEffect(() => {
     checkAuth();

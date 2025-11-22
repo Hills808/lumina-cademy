@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useMissions } from "./useMissions";
 
 interface AddXPResult {
   new_total_xp: number;
@@ -7,8 +8,9 @@ interface AddXPResult {
   level_up: boolean;
 }
 
-export const useXPManager = () => {
+export const useXPManager = (userId?: string) => {
   const { toast } = useToast();
+  const { updateMissionProgress } = useMissions(userId);
 
   const addXP = async (
     userId: string,
@@ -48,6 +50,22 @@ export const useXPManager = () => {
 
       // Verificar novos badges
       await checkNewBadges(userId);
+
+      // Atualizar progresso de missões baseado no tipo de atividade
+      const missionTypeMap: Record<string, string> = {
+        quiz_completed: "complete_quizzes",
+        quiz_perfect: "perfect_quizzes",
+        material_read: "read_materials",
+        daily_login: "daily_login",
+      };
+
+      const missionType = missionTypeMap[activityType];
+      if (missionType) {
+        await updateMissionProgress.mutateAsync({
+          requirementType: missionType,
+          increment: 1,
+        });
+      }
 
       return result;
     } catch (error) {
