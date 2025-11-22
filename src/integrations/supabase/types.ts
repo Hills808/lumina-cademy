@@ -44,6 +44,44 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_quiz_schedule: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_generated_at: string | null
+          next_generation_at: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_generated_at?: string | null
+          next_generation_at: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_generated_at?: string | null
+          next_generation_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_quiz_schedule_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string
@@ -192,9 +230,13 @@ export type Database = {
           content: string
           created_at: string
           description: string | null
+          difficulty_level: string | null
           id: string
+          keywords: string[] | null
+          summary: string | null
           teacher_id: string
           title: string
+          topics: string[] | null
           updated_at: string
           video_type: string | null
           video_url: string | null
@@ -204,9 +246,13 @@ export type Database = {
           content: string
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
           id?: string
+          keywords?: string[] | null
+          summary?: string | null
           teacher_id: string
           title: string
+          topics?: string[] | null
           updated_at?: string
           video_type?: string | null
           video_url?: string | null
@@ -216,9 +262,13 @@ export type Database = {
           content?: string
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
           id?: string
+          keywords?: string[] | null
+          summary?: string | null
           teacher_id?: string
           title?: string
+          topics?: string[] | null
           updated_at?: string
           video_type?: string | null
           video_url?: string | null
