@@ -162,13 +162,26 @@ const QuizAutomatico = () => {
     setGeneratingQuiz(classId);
 
     try {
+      console.log('Invocando função edge para gerar quiz...', classId);
+      
       const { data, error } = await supabase.functions.invoke('generate-weekly-quiz', {
         body: { classId }
       });
 
-      if (error) throw error;
+      console.log('Resposta da função edge:', { data, error });
 
-      if (data.error) {
+      if (error) {
+        console.error('Erro da função edge:', error);
+        toast({
+          title: "Erro ao chamar função",
+          description: `Status: ${error.message || 'Erro desconhecido'}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('Erro retornado pela função:', data.error);
         toast({
           title: "Erro ao gerar quiz",
           description: data.error,
@@ -177,13 +190,21 @@ const QuizAutomatico = () => {
         return;
       }
 
-      toast({
-        title: "Quiz gerado com sucesso!",
-        description: `"${data.quiz_title}" foi criado com ${data.questions_count} questões`,
-      });
-
-      await loadSchedules();
+      if (data?.success) {
+        toast({
+          title: "Quiz gerado com sucesso!",
+          description: `"${data.quiz_title}" foi criado com ${data.questions_count} questões`,
+        });
+        await loadSchedules();
+      } else {
+        toast({
+          title: "Resposta inesperada",
+          description: "A função não retornou dados esperados",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error('Erro ao gerar quiz:', error);
       toast({
         title: "Erro",
         description: error instanceof Error ? error.message : "Erro desconhecido",
