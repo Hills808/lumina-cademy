@@ -200,7 +200,7 @@ const Materiais = () => {
       teacher_id: user.id,
       video_url: newMaterial.video_url || null,
       video_type: newMaterial.video_type === "none" ? null : newMaterial.video_type || null,
-      keywords: newMaterial.keywords.length > 0 ? newMaterial.keywords : null,
+      keywords: null,
       topics: newMaterial.topics.length > 0 ? newMaterial.topics : null,
       difficulty_level: newMaterial.difficulty_level,
       summary: newMaterial.summary || null,
@@ -319,14 +319,14 @@ const Materiais = () => {
                         Novo Material
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Criar Novo Material</DialogTitle>
                         <DialogDescription>
                           Publique um novo material de aula para seus alunos
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4">
+                      <div className="space-y-4 pb-4">
                         <div>
                           <Label htmlFor="class">Turma</Label>
                           <Select value={newMaterial.class_id} onValueChange={(value) => setNewMaterial({ ...newMaterial, class_id: value })}>
@@ -378,18 +378,6 @@ const Materiais = () => {
                             onChange={(e) => setNewMaterial({ ...newMaterial, summary: e.target.value })}
                             placeholder="Resumo do material para facilitar geração de quizzes pela IA"
                             rows={3}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="keywords">Palavras-chave (separadas por vírgula)</Label>
-                          <Input
-                            id="keywords"
-                            value={newMaterial.keywords.join(", ")}
-                            onChange={(e) => setNewMaterial({ 
-                              ...newMaterial, 
-                              keywords: e.target.value.split(",").map(k => k.trim()).filter(k => k) 
-                            })}
-                            placeholder="Ex: álgebra, equações, matemática"
                           />
                         </div>
                         <div>
