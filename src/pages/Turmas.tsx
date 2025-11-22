@@ -25,6 +25,9 @@ interface Class {
   code: string;
   created_at: string;
   enrollment_count?: number;
+  teacher?: {
+    full_name: string;
+  };
 }
 
 const Turmas = () => {
@@ -129,7 +132,23 @@ const Turmas = () => {
           .in("id", classIds)
           .order("created_at", { ascending: false });
 
-        setClasses(classesData || []);
+        // Buscar nomes dos professores
+        if (classesData && classesData.length > 0) {
+          const teacherIds = [...new Set(classesData.map(c => c.teacher_id))];
+          const { data: teachersData } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", teacherIds);
+
+          const classesWithTeachers = classesData.map(cls => ({
+            ...cls,
+            teacher: teachersData?.find(t => t.id === cls.teacher_id) || null
+          }));
+
+          setClasses(classesWithTeachers as any);
+        } else {
+          setClasses([]);
+        }
       }
     }
   };
@@ -409,6 +428,13 @@ const Turmas = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {profile.role === "student" && cls.teacher && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Professor:</span>
+                            <span className="font-medium">{cls.teacher.full_name}</span>
+                          </div>
+                        )}
+                        
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Código:</span>
                           <div className="flex items-center gap-2">

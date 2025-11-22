@@ -36,6 +36,9 @@ interface Material {
   classes?: {
     name: string;
   };
+  teacher?: {
+    full_name: string;
+  };
 }
 
 interface Class {
@@ -154,6 +157,7 @@ const Materiais = () => {
         description,
         content,
         class_id,
+        teacher_id,
         created_at,
         video_url,
         video_type,
@@ -180,7 +184,23 @@ const Materiais = () => {
       return;
     }
 
-    setMaterials(data || []);
+    // Buscar nomes dos professores
+    if (data && data.length > 0) {
+      const teacherIds = [...new Set(data.map(m => m.teacher_id))];
+      const { data: teachersData } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", teacherIds);
+
+      const materialsWithTeachers = data.map(material => ({
+        ...material,
+        teacher: teachersData?.find(t => t.id === material.teacher_id) || null
+      }));
+
+      setMaterials(materialsWithTeachers as any);
+    } else {
+      setMaterials([]);
+    }
   };
 
   const handleCreateMaterial = async () => {
@@ -468,8 +488,15 @@ const Materiais = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="text-sm text-muted-foreground">
-                          Turma: {(material.classes as any)?.name || "N/A"}
+                        <div className="space-y-1 text-sm">
+                          <div className="text-muted-foreground">
+                            Turma: {(material.classes as any)?.name || "N/A"}
+                          </div>
+                          {profile.role === "student" && material.teacher && (
+                            <div className="text-muted-foreground">
+                              Professor: {material.teacher.full_name}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex gap-2">
