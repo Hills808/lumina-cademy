@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Clock, CheckCircle2, XCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useXPManager } from "@/hooks/useXPManager";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Brain, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 interface UserProfile {
   full_name: string;
@@ -34,22 +32,11 @@ interface QuizAttempt {
   completed_at: string | null;
 }
 
-const Quizzes = () => {
+export default function Quizzes() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { addXP, updateStreak } = useXPManager(currentUserId);
-
-  useEffect(() => {
-    const loadUserId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
-    };
-    loadUserId();
-  }, []);
 
   useEffect(() => {
     checkAuth();
@@ -111,7 +98,6 @@ const Quizzes = () => {
       .order("created_at", { ascending: false });
 
     if (quizzesData) {
-      // Load attempts for each quiz
       const quizzesWithAttempts = await Promise.all(
         quizzesData.map(async (quiz) => {
           const { data: attempts } = await supabase
@@ -225,29 +211,13 @@ const Quizzes = () => {
                         </div>
                         <Button 
                           className="w-full" 
-                          variant={profile.role === "teacher" ? "outline" : "default"}
-                          onClick={async () => {
-                            if (profile.role === "student" && currentUserId) {
-                              // Simulação: completar quiz e ganhar XP + progresso em missões
-                              await addXP(currentUserId, 30, "quiz_completed", {
-                                quiz_id: quiz.id,
-                                quiz_title: quiz.title,
-                              });
-                              await updateStreak(currentUserId);
-                              
-                              toast({
-                                title: "Quiz Completado! 🎉",
-                                description: "+30 XP ganhos! Progresso de missões atualizado.",
-                              });
-                            } else {
-                              toast({
-                                title: "Em breve",
-                                description: "Funcionalidade completa de quiz em desenvolvimento",
-                              });
+                          onClick={() => {
+                            if (profile.role === "student") {
+                              navigate(`/quiz/${quiz.id}`);
                             }
                           }}
                         >
-                          {profile.role === "teacher" ? "Editar Quiz" : "Fazer Quiz (Simulação)"}
+                          {profile.role === "teacher" ? "Ver Respostas" : "Fazer Quiz"}
                         </Button>
                       </CardContent>
                     </Card>
@@ -260,6 +230,4 @@ const Quizzes = () => {
       </div>
     </SidebarProvider>
   );
-};
-
-export default Quizzes;
+}
