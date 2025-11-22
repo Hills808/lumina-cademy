@@ -88,13 +88,20 @@ serve(async (req) => {
     const systemPrompt = `Você é um assistente especializado em criar quizzes educacionais.
 Sua tarefa é analisar os materiais fornecidos e criar um quiz semanal com 5 questões de múltipla escolha.
 
-IMPORTANTE:
-- Crie questões que testem a compreensão dos conceitos principais
-- Varie o nível de dificuldade das questões
+IMPORTANTE - NÍVEL DE DIFICULDADE:
+- Analise o campo "dificuldade" de cada material (fácil, intermediário, avançado)
+- Crie questões proporcionais aos níveis de dificuldade dos materiais:
+  * Materiais FÁCEIS: questões básicas sobre conceitos fundamentais e definições
+  * Materiais INTERMEDIÁRIOS: questões que exigem compreensão e aplicação de conceitos
+  * Materiais AVANÇADOS: questões complexas envolvendo análise, síntese e resolução de problemas
+- Se houver materiais de diferentes níveis, distribua as questões proporcionalmente
+- Adapte a complexidade do vocabulário e dos exemplos ao nível predominante
+
+ESTRUTURA DAS QUESTÕES:
 - Cada questão deve ter 4 alternativas (A, B, C, D)
 - Apenas UMA alternativa deve estar correta
-- Forneça explicações breves para as respostas corretas
 - As questões devem ser claras e objetivas
+- Forneça explicações breves para as respostas corretas
 
 Retorne sua resposta em formato JSON seguindo exatamente esta estrutura:
 {
