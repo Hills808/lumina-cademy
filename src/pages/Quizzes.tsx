@@ -227,26 +227,27 @@ const Quizzes = () => {
                           className="w-full" 
                           variant={profile.role === "teacher" ? "outline" : "default"}
                           onClick={async () => {
-                            if (profile.role === "student") {
-                              // Quando implementar: após completar quiz, adicionar XP
-                              // const score = quizResult.score;
-                              // const { data: { user } } = await supabase.auth.getUser();
-                              // if (user) {
-                              //   const xpAmount = score === 100 ? 50 : 25; // XP bonus para nota perfeita
-                              //   await addXP(user.id, xpAmount, score === 100 ? "quiz_perfect" : "quiz_completed", {
-                              //     quiz_id: quiz.id,
-                              //     score: score,
-                              //   });
-                              //   await updateStreak(user.id);
-                              // }
+                            if (profile.role === "student" && currentUserId) {
+                              // Simulação: completar quiz e ganhar XP + progresso em missões
+                              await addXP(currentUserId, 30, "quiz_completed", {
+                                quiz_id: quiz.id,
+                                quiz_title: quiz.title,
+                              });
+                              await updateStreak(currentUserId);
+                              
+                              toast({
+                                title: "Quiz Completado! 🎉",
+                                description: "+30 XP ganhos! Progresso de missões atualizado.",
+                              });
+                            } else {
+                              toast({
+                                title: "Em breve",
+                                description: "Funcionalidade completa de quiz em desenvolvimento",
+                              });
                             }
-                            toast({
-                              title: "Em breve",
-                              description: "Funcionalidade de fazer quiz em desenvolvimento",
-                            });
                           }}
                         >
-                          {profile.role === "teacher" ? "Editar Quiz" : "Iniciar Quiz"}
+                          {profile.role === "teacher" ? "Editar Quiz" : "Fazer Quiz (Simulação)"}
                         </Button>
                       </CardContent>
                     </Card>
