@@ -118,9 +118,13 @@ const Materiais = () => {
 
   const loadClasses = async (role: "student" | "teacher") => {
     if (role === "teacher") {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
       const { data } = await supabase
         .from("classes")
         .select("id, name")
+        .eq("teacher_id", user.id)
         .order("name");
       setClasses(data || []);
     } else {
