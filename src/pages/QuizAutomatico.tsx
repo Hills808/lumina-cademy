@@ -193,7 +193,7 @@ const QuizAutomatico = () => {
       if (data?.success) {
         toast({
           title: "Quiz gerado com sucesso!",
-          description: `"${data.quiz_title}" foi criado com ${data.questions_count} questões`,
+          description: `"${data.quiz_title}" com ${data.questions_count} questões baseado em ${data.materials_used} materiais (${data.period_used})`,
         });
         await loadSchedules();
       } else {

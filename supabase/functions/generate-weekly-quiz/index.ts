@@ -34,16 +34,59 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Buscar materiais da turma da última semana
+    // Buscar materiais da turma - tentar períodos diferentes
+    let materials = null;
+    let materialsError = null;
+    let periodUsed = '';
+
+    // Tentar última semana primeiro
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const { data: materials, error: materialsError } = await supabase
+    const weekResult = await supabase
       .from('materials')
       .select('id, title, description, content, keywords, topics, difficulty_level, summary')
       .eq('class_id', classId)
       .gte('created_at', oneWeekAgo.toISOString())
       .order('created_at', { ascending: false });
+
+    if (weekResult.data && weekResult.data.length > 0) {
+      materials = weekResult.data;
+      periodUsed = 'última semana';
+    } else {
+      // Se não encontrou na última semana, tentar últimas 2 semanas
+      console.log('Nenhum material na última semana, tentando 2 semanas...');
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+      const twoWeeksResult = await supabase
+        .from('materials')
+        .select('id, title, description, content, keywords, topics, difficulty_level, summary')
+        .eq('class_id', classId)
+        .gte('created_at', twoWeeksAgo.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (twoWeeksResult.data && twoWeeksResult.data.length > 0) {
+        materials = twoWeeksResult.data;
+        periodUsed = 'últimas 2 semanas';
+      } else {
+        // Se ainda não encontrou, pegar os 5 materiais mais recentes
+        console.log('Nenhum material nas últimas 2 semanas, pegando mais recentes...');
+        const recentResult = await supabase
+          .from('materials')
+          .select('id, title, description, content, keywords, topics, difficulty_level, summary')
+          .eq('class_id', classId)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (recentResult.data && recentResult.data.length > 0) {
+          materials = recentResult.data;
+          periodUsed = 'materiais mais recentes';
+        } else {
+          materialsError = recentResult.error;
+        }
+      }
+    }
 
     if (materialsError) {
       console.error('Erro ao buscar materiais:', materialsError);
@@ -55,10 +98,12 @@ serve(async (req) => {
 
     if (!materials || materials.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Nenhum material encontrado na última semana para esta turma' }),
+        JSON.stringify({ error: 'Nenhum material encontrado para esta turma. Por favor, publique materiais antes de gerar quizzes.' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`Encontrados ${materials.length} materiais (${periodUsed})`);
 
     // Buscar informações da turma
     const { data: classData } = await supabase
@@ -122,11 +167,12 @@ Retorne sua resposta em formato JSON seguindo exatamente esta estrutura:
   ]
 }`;
 
-    const userPrompt = `Baseando-se nos seguintes materiais da turma "${classData.name}", crie um quiz semanal:
+    const userPrompt = `Baseando-se nos seguintes ${materials.length} materiais da turma "${classData.name}" (${periodUsed}), crie um quiz semanal:
 
 ${JSON.stringify(materialsContext, null, 2)}
 
-Crie 5 questões de múltipla escolha que cubram os principais conceitos abordados nesses materiais.`;
+Crie 5 questões de múltipla escolha que cubram os principais conceitos abordados nesses materiais. 
+As questões devem ser relevantes e educativas, cobrindo diferentes aspectos do conteúdo apresentado.`;
 
     console.log('Chamando IA para gerar quiz...');
 
@@ -233,7 +279,9 @@ Crie 5 questões de múltipla escolha que cubram os principais conceitos abordad
         success: true,
         quiz_id: quiz.id,
         quiz_title: quiz.title,
-        questions_count: quizData.questions.length
+        questions_count: quizData.questions.length,
+        materials_used: materials.length,
+        period_used: periodUsed
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
