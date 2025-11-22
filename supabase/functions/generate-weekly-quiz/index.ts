@@ -240,8 +240,12 @@ Crie 5 questões de múltipla escolha que cubram os principais conceitos abordad
 
   } catch (error) {
     console.error('Erro geral:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A');
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
