@@ -11,6 +11,7 @@ import Turmas from "./pages/Turmas";
 import Materiais from "./pages/Materiais";
 import Calendario from "./pages/Calendario";
 import Quizzes from "./pages/Quizzes";
+import QuizAutomatico from "./pages/QuizAutomatico";
 import Assistente from "./pages/Assistente";
 import Sobre from "./pages/Sobre";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/materiais" element={<Materiais />} />
           <Route path="/calendario" element={<Calendario />} />
           <Route path="/quizzes" element={<Quizzes />} />
+          <Route path="/quiz-automatico" element={<QuizAutomatico />} />
           <Route path="/assistente" element={<Assistente />} />
           <Route path="/sobre" element={<Sobre />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

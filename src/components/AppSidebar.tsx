@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, BookOpen, Users, Bot, LogOut, Settings, Calendar, Brain } from "lucide-react";
+import { Home, BookOpen, Users, Bot, LogOut, Settings, Calendar, Brain, Sparkles } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -40,6 +40,7 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     { title: "Minhas Turmas", url: "/turmas", icon: Users },
     { title: "Calendário", url: "/calendario", icon: Calendar },
     { title: "Quizzes", url: "/quizzes", icon: Brain },
+    { title: "Quiz Automático IA", url: "/quiz-automatico", icon: Sparkles },
     { title: "IA para Professores", url: "/assistente", icon: Bot },
   ];
 

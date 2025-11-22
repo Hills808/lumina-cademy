@@ -1,1 +1,7 @@
 project_id = "dbcooaeoaezvyhibvtlx"
+
+[functions.chat-assistant]
+verify_jwt = false
+
+[functions.generate-weekly-quiz]
+verify_jwt = false

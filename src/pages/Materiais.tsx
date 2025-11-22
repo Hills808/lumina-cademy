@@ -29,6 +29,10 @@ interface Material {
   created_at: string;
   video_url: string | null;
   video_type: string | null;
+  keywords?: string[];
+  topics?: string[];
+  difficulty_level?: string;
+  summary?: string;
   classes?: {
     name: string;
   };
@@ -54,6 +58,10 @@ const Materiais = () => {
     class_id: "",
     video_url: "",
     video_type: "",
+    keywords: [] as string[],
+    topics: [] as string[],
+    difficulty_level: "intermediário",
+    summary: "",
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -145,6 +153,10 @@ const Materiais = () => {
         created_at,
         video_url,
         video_type,
+        keywords,
+        topics,
+        difficulty_level,
+        summary,
         classes:class_id (name)
       `)
       .order("created_at", { ascending: false });
@@ -188,6 +200,10 @@ const Materiais = () => {
       teacher_id: user.id,
       video_url: newMaterial.video_url || null,
       video_type: newMaterial.video_type === "none" ? null : newMaterial.video_type || null,
+      keywords: newMaterial.keywords.length > 0 ? newMaterial.keywords : null,
+      topics: newMaterial.topics.length > 0 ? newMaterial.topics : null,
+      difficulty_level: newMaterial.difficulty_level,
+      summary: newMaterial.summary || null,
     });
 
     if (error) {
@@ -205,7 +221,18 @@ const Materiais = () => {
     });
 
     setDialogOpen(false);
-    setNewMaterial({ title: "", description: "", content: "", class_id: "", video_url: "", video_type: "" });
+    setNewMaterial({ 
+      title: "", 
+      description: "", 
+      content: "", 
+      class_id: "", 
+      video_url: "", 
+      video_type: "",
+      keywords: [],
+      topics: [],
+      difficulty_level: "intermediário",
+      summary: ""
+    });
     if (profile) await loadMaterials(profile.role);
   };
 
@@ -342,6 +369,53 @@ const Materiais = () => {
                             placeholder="Digite o conteúdo do material..."
                             rows={10}
                           />
+                        </div>
+                        <div>
+                          <Label htmlFor="summary">Resumo (para IA)</Label>
+                          <Textarea
+                            id="summary"
+                            value={newMaterial.summary}
+                            onChange={(e) => setNewMaterial({ ...newMaterial, summary: e.target.value })}
+                            placeholder="Resumo do material para facilitar geração de quizzes pela IA"
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="keywords">Palavras-chave (separadas por vírgula)</Label>
+                          <Input
+                            id="keywords"
+                            value={newMaterial.keywords.join(", ")}
+                            onChange={(e) => setNewMaterial({ 
+                              ...newMaterial, 
+                              keywords: e.target.value.split(",").map(k => k.trim()).filter(k => k) 
+                            })}
+                            placeholder="Ex: álgebra, equações, matemática"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="topics">Tópicos (separados por vírgula)</Label>
+                          <Input
+                            id="topics"
+                            value={newMaterial.topics.join(", ")}
+                            onChange={(e) => setNewMaterial({ 
+                              ...newMaterial, 
+                              topics: e.target.value.split(",").map(t => t.trim()).filter(t => t) 
+                            })}
+                            placeholder="Ex: matemática básica, álgebra linear"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="difficulty">Nível de Dificuldade</Label>
+                          <Select value={newMaterial.difficulty_level} onValueChange={(value) => setNewMaterial({ ...newMaterial, difficulty_level: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="iniciante">Iniciante</SelectItem>
+                              <SelectItem value="intermediário">Intermediário</SelectItem>
+                              <SelectItem value="avançado">Avançado</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label htmlFor="video_type">Tipo de Vídeo (opcional)</Label>
