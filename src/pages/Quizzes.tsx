@@ -7,7 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Brain, Clock, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UserProfile {
   full_name: string;
@@ -34,9 +45,12 @@ interface QuizAttempt {
 
 export default function Quizzes() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [quizToDelete, setQuizToDelete] = useState<Quiz | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -111,6 +125,36 @@ export default function Quizzes() {
       );
 
       setQuizzes(quizzesWithAttempts);
+    }
+  };
+
+  const handleDeleteQuiz = async () => {
+    if (!quizToDelete) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("quizzes")
+        .delete()
+        .eq("id", quizToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Quiz deletado",
+        description: "O quiz foi removido com sucesso",
+      });
+
+      setQuizzes(quizzes.filter(q => q.id !== quizToDelete.id));
+    } catch (error) {
+      toast({
+        title: "Erro ao deletar quiz",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setQuizToDelete(null);
     }
   };
 
@@ -209,18 +253,30 @@ export default function Quizzes() {
                             {quiz.passing_score}% para aprovar
                           </div>
                         </div>
-                        <Button 
-                          className="w-full" 
-                          onClick={() => {
-                            if (profile.role === "student") {
-                              navigate(`/quiz/${quiz.id}`);
-                            } else if (profile.role === "teacher") {
-                              navigate(`/quiz/${quiz.id}/results`);
-                            }
-                          }}
-                        >
-                          {profile.role === "teacher" ? "Ver Respostas" : "Fazer Quiz"}
-                        </Button>
+                        {profile.role === "teacher" ? (
+                          <div className="flex gap-2">
+                            <Button 
+                              className="flex-1" 
+                              onClick={() => navigate(`/quiz/${quiz.id}/results`)}
+                            >
+                              Ver Respostas
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => setQuizToDelete(quiz)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button 
+                            className="w-full" 
+                            onClick={() => navigate(`/quiz/${quiz.id}`)}
+                          >
+                            Fazer Quiz
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))
@@ -230,6 +286,28 @@ export default function Quizzes() {
           </main>
         </div>
       </div>
+
+      <AlertDialog open={!!quizToDelete} onOpenChange={() => setQuizToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar Quiz</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar o quiz "{quizToDelete?.title}"? 
+              Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteQuiz}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deletando..." : "Deletar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 }
