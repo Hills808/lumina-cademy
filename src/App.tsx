@@ -12,6 +12,7 @@ import Materiais from "./pages/Materiais";
 import Calendario from "./pages/Calendario";
 import Quizzes from "./pages/Quizzes";
 import QuizAttempt from "./pages/QuizAttempt";
+import QuizResults from "./pages/QuizResults";
 import QuizAutomatico from "./pages/QuizAutomatico";
 import Assistente from "./pages/Assistente";
 import Sobre from "./pages/Sobre";
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/calendario" element={<Calendario />} />
           <Route path="/quizzes" element={<Quizzes />} />
           <Route path="/quiz/:quizId" element={<QuizAttempt />} />
+          <Route path="/quiz/:quizId/results" element={<QuizResults />} />
           <Route path="/quiz-automatico" element={<QuizAutomatico />} />
           <Route path="/assistente" element={<Assistente />} />
           <Route path="/sobre" element={<Sobre />} />

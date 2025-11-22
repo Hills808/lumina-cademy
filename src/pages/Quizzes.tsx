@@ -214,6 +214,8 @@ export default function Quizzes() {
                           onClick={() => {
                             if (profile.role === "student") {
                               navigate(`/quiz/${quiz.id}`);
+                            } else if (profile.role === "teacher") {
+                              navigate(`/quiz/${quiz.id}/results`);
                             }
                           }}
                         >
