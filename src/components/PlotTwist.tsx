@@ -132,11 +132,11 @@ const PlotTwist = ({ onComplete }: PlotTwistProps) => {
         setTypingText(lineText.slice(0, i + 1));
         playTypingSound();
         i++;
-        typingTimerRef.current = window.setTimeout(typeNext, 45);
+        typingTimerRef.current = window.setTimeout(typeNext, 30);
       } else {
         typingTimerRef.current = window.setTimeout(() => {
           setCurrentLine((prev) => prev + 1);
-        }, 120);
+        }, 80);
       }
     };
 
